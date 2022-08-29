@@ -16,9 +16,10 @@
 #'
 check_req_args <- function(func, possible_args=NULL){
 
-  given_args = as.list(match.call(definition = sys.function(sys.parent(1)),
-                                  call = sys.call(sys.parent(1)),
-                                  envir = parent.frame(1L)))
+  # browser()
+  given_args = as.list(match.call(definition = sys.function(sys.parent(2)),
+                                  call = sys.call(sys.parent(2)),
+                                  envir = parent.frame(2L)))
   given_args = given_args[2:length(given_args)]
   required_args <- setdiff(formalArgs(func), "...")
 

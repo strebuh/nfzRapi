@@ -14,31 +14,31 @@
 #'  foo("a", "b", "c", "d")
 #' }
 #'
-check_req_args <- function(func, possible_args=NULL){
+check_req_args <- function(possible_args=NULL){
 
-  # browser()
-  given_args = as.list(match.call(definition = sys.function(sys.parent(2)),
+  func_call <- as.list(match.call(definition = sys.function(sys.parent(2)),
                                   call = sys.call(sys.parent(2)),
                                   envir = parent.frame(2L)))
-  given_args = given_args[2:length(given_args)]
-  required_args <- setdiff(formalArgs(func), "...")
+  given_args <- func_call[2:length(func_call)]
+  required_args <- setdiff(do.call(formalArgs, list(func_call[[1]])), "...")
+  # browser()
 
-  msg = ""
+  msg <- ""
   missing_args <- setdiff(required_args, names(given_args))
   if(!rlang::is_empty(missing_args)){
-    msg = paste0(msg, paste0("You did not provide all reqired arguments. Missing: ", paste(missing_args, collapse = ", ")))
+    msg <- paste0(msg, paste0("You did not provide all reqired arguments. Missing: ", paste(missing_args, collapse = ", ")))
   }
 
 
   if(!is.null(possible_args)){
-    wrong_arguments = setdiff(names(given_args), possible_args)
+    wrong_arguments <- setdiff(names(given_args), possible_args)
     if("" %in% wrong_arguments){
-      msg = paste(msg, "OPTIONAL ARGUMENTS NEED TO BE NAMED!", paste0("Possible arguments are: ", paste(possible_args, collapse = ", ")), sep="\n")
+      msg <- paste(msg, "OPTIONAL ARGUMENTS NEED TO BE NAMED!", paste0("Possible arguments are: ", paste(possible_args, collapse = ", ")), sep = "\n")
     }
 
-    wrong_arguments = setdiff(wrong_arguments, "")
+    wrong_arguments <- setdiff(wrong_arguments, "")
     if(!rlang::is_empty(wrong_arguments)){
-      msg = paste(msg, paste0("Some of provided arguments are incorrect: ", paste(wrong_arguments, collapse = ", ")), sep="\n")
+      msg <- paste(msg, paste0("Some of provided arguments are incorrect: ", paste(wrong_arguments, collapse = ", ")), sep="\n")
     }
   }
 
@@ -48,6 +48,7 @@ check_req_args <- function(func, possible_args=NULL){
     on.exit(options(opt))
     stop()
   }
+  # browser()
   return(given_args)
 }
 
@@ -55,7 +56,7 @@ check_req_args <- function(func, possible_args=NULL){
 #' @title Check for compatibility of LC_CTYPE environment variable
 #' @description To be able to download data from NFZ api service LC_CTYPE env. var. has to be set to Polish language. This function checks for that, and suggest code to run, to be able to use NFZ api. If LC_CTYPE doesn't match, function stops the call.
 check_env_lang <- function(){
-  char_set = Sys.getlocale("LC_CTYPE")
+  char_set <- Sys.getlocale("LC_CTYPE")
   if(char_set != "Polish_Poland.1250"){
     message(paste0("Your character set does not support Polish non ASCII characters.",
     "Your LC_CTYPE environment variable has value '", char_set,"', but to be sure that nfzRapi functions work correctly it has to be changed to 'Polish_Poland.1250'.\n
@@ -81,7 +82,7 @@ check_env_lang <- function(){
 #'
 convert_pl_signs <- function(char){ #, to_pl_lc_type=F
 
-  unicode_dict = list(
+  unicode_dict <- list(
     `%C4%84`="\u104",
     `%C4%86`="\u106",
     `%C4%98`="\u118",
@@ -102,14 +103,14 @@ convert_pl_signs <- function(char){ #, to_pl_lc_type=F
     `%C5%BC`="\u17C"
   )
   # browser()
-  char2 = c()
+  char2 <- c()
   for(ch in char){
     for(letter in unicode_dict){
       # browser()
-      change=names(unicode_dict)[match(letter, unicode_dict)]
-      ch=gsub(letter, change[!is.na(change)], ch)
+      change<-names(unicode_dict)[match(letter, unicode_dict)]
+      ch<-gsub(letter, change[!is.na(change)], ch)
     }
-    char2 = c(char2, ch)
+    char2 <- c(char2, ch)
   }
   # browser()
   return(char2)

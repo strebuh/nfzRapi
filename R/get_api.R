@@ -181,3 +181,27 @@ agr_provider <- function(year, provider_code, admin_branch){
                       url_args=c("year", "provider_code"))
   return(data)
 }
+
+
+agr_get_serivces <- function(year, ...){
+
+  check_env_lang() # Check the settings of the language
+  available_args <- list(year="year",
+                         service_type="code",
+                         service_name="name")
+
+  data <- get_request(available_args=available_args, schema="service-types", api_type="app-umw-api")
+  return(data)
+}
+
+
+agr_get_products <- function(year, ...){
+
+  check_env_lang() # Check the settings of the language
+  available_args <- list(year="year",
+                         product_code="code",
+                         product_name="name")
+
+  data <- get_request(available_args=available_args, schema="contract-products", api_type="app-umw-api")
+  return(data)
+}

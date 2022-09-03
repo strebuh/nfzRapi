@@ -16,10 +16,9 @@ get_request <- function(available_args,  api_type="app-umw-api", schema="agreeme
   # Prepare query provided arguments
   formal_args = c(api_type, schema)
   if(!is.null(url_args)){
-    browser
-    n_formals = if(length(formal_names) == length(given_args)) 0 else length(intersect(names(given_args), formal_names))
-    optional_args = if(length(formal_names) == length(given_args)) list() else given_args[(n_formals+1):length(given_args)]
-    browser()
+    n_formals = if(length(url_args) == length(given_args)) 0 else length(intersect(names(given_args), url_args))
+    optional_args = if(length(url_args) == length(given_args)) list() else given_args[(n_formals+1):length(given_args)]
+    # browser()
 
     formal_args = c(formal_args, unlist(setdiff(given_args, optional_args)))
 

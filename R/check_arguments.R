@@ -16,11 +16,13 @@
 #'
 check_req_args <- function(possible_args=NULL){
 
+  # browser()
   func_call <- as.list(match.call(definition = sys.function(sys.parent(2)),
                                   call = sys.call(sys.parent(2)),
                                   envir = parent.frame(2L)))
   given_args <- func_call[2:length(func_call)]
   required_args <- setdiff(do.call(formalArgs, list(func_call[[1]])), "...")
+  # formal_args = rlang::fn_fmls(rlang::caller_fn(2))
   # browser()
 
   msg <- ""
@@ -49,7 +51,7 @@ check_req_args <- function(possible_args=NULL){
     stop()
   }
   # browser()
-  return(given_args)
+  return(list(formal_names=required_args, given_args=given_args))
 }
 
 

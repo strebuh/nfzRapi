@@ -4,11 +4,9 @@
 \alias{check_req_args}
 \title{Check for function's arguments}
 \usage{
-check_req_args(func)
+check_req_args(possible_args = NULL)
 }
 \arguments{
-\item{func}{The main function bare name}
-
 \item{possible_args}{A vector of all available but not required arguments names (acceptable optional arguments defined as '...')}
 }
 \value{
@@ -18,7 +16,6 @@ Returns a vector of arguments provided in a function call if all arguments are c
 To be run in local environment (inside another function). Checks whether all required arguments of function run in global env were provided during a function call. If a vector of possible arguments was given also checks whether all provided in a function call arguments are supported.
 }
 \examples{
-check_req_args(a, b) <- example to run
 \dontrun{
  foo <- function(a, b, ...){
    given_args = check_req_args(foo, c("a", "b", "c"))

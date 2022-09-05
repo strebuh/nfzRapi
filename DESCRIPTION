@@ -1,12 +1,12 @@
 Package: nfzRapi
-Title: What the Package Does (One Line, Title Case)
+Title: Package to get data from NFZ API
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+    person("Hubert", "Śmieciuch", , "hubert.cooperates@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Description: Package to get data about agreements and providers from NFZ API `https://api.nfz.gov.pl/app-umw-api/`.
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
+Imports: data.table, httr, jsonlite, rlang, methods
+License: MIT + file LICENSE

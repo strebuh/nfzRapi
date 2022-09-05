@@ -1,14 +1,15 @@
-
+# source("R/check_arguments.R")
 
 #' @title Get data from selected api type and schema provided available arguments
-#' @description General function to get data from selected NFZ API type (agreements, ...) and schema (ex. agreements or providers), provided lsit of available arguments. Function to be run inside outer function for selected api. User given arugments are retrieved from appropriate environemt.
-#' @param available_args List of available arguments for selected api sechema
+#' @description General function to get data from selected NFZ API type (agreements, ...) and schema (ex. agreements or providers), provided list of available arguments. Function to be run inside outer function for selected API User given arguments are retrieved from appropriate environment.
+#' @param available_args List of available arguments for selected api schema.
 #' @param api_type A type of NFZ api to be queried.
-#' @param schema A name of schema of appropriate api
-#' @return  Returns a data.table for requested query
+#' @param schema A name of schema of appropriate api.
+#' @param url_args A vector of obligatory arguments to be passed without keys as a part of the url <https://api.nfz.gov.pl/api_type/schema/url_args/url_args>.
+#' @return  Returns a data.table for requested query.
 get_request <- function(available_args,  api_type="app-umw-api", schema="agreements", url_args=NULL){
 
-  # Retrieve arguments and check their corectrness
+  # Retrieve arguments and check their corectness
   given_args <- check_req_args(possible_args=names(available_args)) # get_api_data,
   formal_names <- given_args$formal_names
   given_args <- given_args$given_args
@@ -18,7 +19,6 @@ get_request <- function(available_args,  api_type="app-umw-api", schema="agreeme
   if(!is.null(url_args)){
     n_formals = if(length(url_args) == length(given_args)) 0 else length(intersect(names(given_args), url_args))
     optional_args = if(length(url_args) == length(given_args)) list() else given_args[(n_formals+1):length(given_args)]
-    # browser()
 
     formal_args = c(formal_args, unlist(setdiff(given_args, optional_args)))
 
@@ -26,7 +26,6 @@ get_request <- function(available_args,  api_type="app-umw-api", schema="agreeme
     optional_args = given_args
   }
   optionals_matcher <- if(rlang::is_empty(optional_args)) "" else "="
-  # browser()
 
   api_agrs <- paste0(sapply(names(optional_args), function(x) available_args[[x]]),
                      optionals_matcher,
@@ -63,7 +62,6 @@ get_request <- function(available_args,  api_type="app-umw-api", schema="agreeme
 
       request <- httr::GET(api_query, httr::timeout(20))
       request_data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
-      # browser()
       data_attribute = sapply(request_data$data, class)
       data_attribute = match("data.frame", data_attribute)
 
@@ -80,18 +78,19 @@ get_request <- function(available_args,  api_type="app-umw-api", schema="agreeme
 }
 
 
-#' @title Query an agreement schema from Agreements api
-#' @description Function to
-#' @param year A year of agreements
-#' @param ow The number of one of 16 voivodship branches of NFZ; character with leading zero between 02-32, increased by 2
-#' @return  Returns a data.table for requested query
+#' @title Get all agreements meeting criteria
+#' @description Query an agreement schema from agreements API to retrieve data about NFZ agreements meeting specified arguments.
+#' @param year A year of agreements.
+#' @param admin_branch The number of one of 16 voivodships branches of NFZ; character with leading zero between 02-32, increased by 2.
+#' @param ... One or multiple argument to filter providers.
+#' @return  Returns data.table.
 #' @export
 #' @examples
 #' \dontrun{
 #'  get_agreements(year=2021, admin_branch='07', town='Siedlce')
 #' }
-# TODO: separate functions or a dictionary of apis addresses and possible arguments for each of them
-agr_get_agrmts <- function(year, ow, ...){
+# TODO: separate functions or a dictionary of API's addresses and possible arguments for each of them
+agr_get_agreements <- function(year, admin_branch, ...){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
@@ -109,29 +108,48 @@ agr_get_agrmts <- function(year, ow, ...){
 }
 
 
-
-agr_agrmts_by_id <- function(id_agreement){
+#' @title Get a particular agreement general details
+#' @description Query an agreement schema from agreements API for contract's number of units, prices and average price split by products.
+#' @param id_agreement A hashed id of NFZ agreement.
+#' @return  Returns data.table containing data about particular agreements.
+#' @export
+agr_get_agreement <- function(id_agreement){
   check_env_lang() # Check the settings of the language
   data <- get_request(available_args=list(id_agreement="id"), schema="agreements", api_type="app-umw-api", url_args="id_agreement")
   return(data)
 }
 
 
-agr_plans_by_id <- function(id_plan){
+#' @title Get a particular agreement general data by months
+#' @description Query an agreement schema from agreements API for data about about a particular agreement split by months. Data contains number of units, price and average price without.
+#' @param id_agreement A hashed id of a NFZ agreement.
+#' @return  Returns data.table.
+#' @export
+agr_get_plan <- function(id_agreement){
   check_env_lang() # Check the settings of the language
-  data <- get_request(available_args=list(id_plan="id"), schema="plans", api_type="app-umw-api", url_args="id_plan")
+  data <- get_request(available_args=list(id_agreement="id"), schema="plans", api_type="app-umw-api", url_args="id_agreement")
   return(data)
 }
 
 
-agr_mnth_pl_by_id <- function(id_month){
+#' @title Get an agreement particular month's plan
+#' @description Query an agreement schema from agreements API for data about a particular agreement month plan split by products. Data contains number of units, price and average price by products.
+#' @param id_plan A hashed id of a month plan of a NFZ agreement.
+#' @return  Returns data.table.
+#' @export
+agr_get_month_plan <- function(id_plan){
   check_env_lang() # Check the settings of the language
-  data <- get_request(available_args=list(id_month="id"), schema="months", api_type="app-umw-api", url_args="id_month")
+  data <- get_request(available_args=list(id_plan="id"), schema="months", api_type="app-umw-api", url_args="id_plan")
   return(data)
 }
 
 
-agr_providers <- function(...){
+#' @title Get a list of providers
+#' @description Query a providers schema from agreements API for data about providers with contracts with NFZ meeting with arguments criteria.
+#' @param ... One or multiple argument to filter providers.
+#' @return  Returns data.table.
+#' @export
+agr_get_providers <- function(...){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
@@ -150,7 +168,13 @@ agr_providers <- function(...){
 }
 
 
-agr_providers_year <- function(year, ...){
+#' @title Get a list of providers from a year
+#' @description Query a providers schema from agreements API for data about providers having contract with NFZ in a particular year and meeting any other specified with arguments criteria. A table contains contract's amount.
+#' @param year A year of a contract.
+#' @param ... One or multiple argument to filter providers.
+#' @return  Returns data.table.
+#' @export
+agr_get_prov_by_year <- function(year, ...){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
@@ -170,7 +194,15 @@ agr_providers_year <- function(year, ...){
   return(data)
 }
 
-agr_provider <- function(year, provider_code, admin_branch){
+
+#' @title Get particular provider's contracted services
+#' @description Query a providers schema from agreements API for data about a provider's NFZ contracted services in a particular year.
+#' @param year A year of a contract.
+#' @param provider_code NFZ assigned provider code (KOD_SWIADCZENIODAWCY).
+#' @param admin_branch NFZ voivodship branch code (OW).
+#' @return  Returns data.table.
+#' @export
+agr_get_provider <- function(year, provider_code, admin_branch){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
@@ -183,7 +215,14 @@ agr_provider <- function(year, provider_code, admin_branch){
 }
 
 
-agr_get_serivces <- function(year, ...){
+#' @title Get a list of service types (Rodzaje Swiadczen)
+#' @description Query a service-types schema from agreements API to get a list of service types (Rodzaje Swiadczen) available in a given year.
+#' @param year A year of a contract.
+#' @param service_type A full or part of NFZ a service type code (Kod rodzaju swiadczen)
+#' @param service_name A full or part of NFZ a service type name (Nazwa rodzaju swiadczen)
+#' @return  Returns data.table.
+#' @export
+agr_get_serivces <- function(year, service_type, service_name){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
@@ -195,7 +234,14 @@ agr_get_serivces <- function(year, ...){
 }
 
 
-agr_get_products <- function(year, ...){
+#' @title Get a list of product types (Produkty Kontraktowe)
+#' @description Query a product-types schema from agreements API to get a list of product types (Produkty Kontraktowe) available in a given year.
+#' @param year A year of a contract.
+#' @param product_code A full or part of NFZ a product type code (Kod produktu kontraktowego)
+#' @param product_name A full or part of NFZ a product type name (Nazwa produktu kontraktowego)
+#' @return  Returns data.table.
+#' @export
+agr_get_products <- function(year, product_code, product_name){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",

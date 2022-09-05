@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_arguments.R
 \name{convert_pl_signs}
 \alias{convert_pl_signs}
-\title{Convert Polish non ASCII characters to NFZapi accpted utf-8 representation of Unicode}
+\title{Convert Polish non ASCII characters to NFZ API accpted utf-8 representation of Unicode}
 \usage{
 convert_pl_signs(char)
 }
@@ -16,7 +16,6 @@ Returns a character vector
 Function accpets a string and converts Polish diacretic non ASCII characters
 }
 \examples{
-check_req_args(a, b) <- example to run
 \dontrun{
  convert_pl_signs("Gąśłękówiżań")
 }

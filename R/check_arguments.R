@@ -1,11 +1,9 @@
 
 #' @title Check for function's arguments
 #' @description To be run in local environment (inside another function). Checks whether all required arguments of function run in global env were provided during a function call. If a vector of possible arguments was given also checks whether all provided in a function call arguments are supported.
-#' @param func The main function bare name
 #' @param possible_args A vector of all available but not required arguments names (acceptable optional arguments defined as '...')
 #' @return  Returns a vector of arguments provided in a function call if all arguments are correct, otherwise function stops
 #' @examples
-#' check_req_args(a, b) <- example to run
 #' \dontrun{
 #'  foo <- function(a, b, ...){
 #'    given_args = check_req_args(foo, c("a", "b", "c"))
@@ -21,7 +19,7 @@ check_req_args <- function(possible_args=NULL){
                                   call = sys.call(sys.parent(2)),
                                   envir = parent.frame(2L)))
   given_args <- func_call[2:length(func_call)]
-  required_args <- setdiff(do.call(formalArgs, list(func_call[[1]])), "...")
+  required_args <- setdiff(do.call(methods::formalArgs, list(func_call[[1]])), "...")
   # formal_args = rlang::fn_fmls(rlang::caller_fn(2))
   # browser()
 
@@ -72,17 +70,16 @@ check_env_lang <- function(){
 
 
 
-#' @title Convert Polish non ASCII characters to NFZapi accpted utf-8 representation of Unicode
+#' @title Convert Polish non ASCII characters to NFZ API accpted utf-8 representation of Unicode
 #' @description Function accpets a string and converts Polish diacretic non ASCII characters
 #' @param char A character where the signs are to be converted
 #' @return  Returns a character vector
 #' @examples
-#' check_req_args(a, b) <- example to run
 #' \dontrun{
 #'  convert_pl_signs("Gąśłękówiżań")
 #' }
 #'
-convert_pl_signs <- function(char){ #, to_pl_lc_type=F
+convert_pl_signs <- function(char){
 
   unicode_dict <- list(
     `%C4%84`="\u104",

@@ -4,7 +4,7 @@
 \alias{agr_get_serivces}
 \title{Get a list of service types (Rodzaje Swiadczen)}
 \usage{
-agr_get_serivces(year, service_type, service_name)
+agr_get_serivces(year, service_type = NULL, service_name = NULL)
 }
 \arguments{
 \item{year}{A year of a contract.}

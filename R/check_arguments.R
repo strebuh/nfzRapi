@@ -1,7 +1,7 @@
 
 #' @title Check for function's arguments
 #' @description To be run in local environment (inside another function). Checks whether all required arguments of function run in global env were provided during a function call. If a vector of possible arguments was given also checks whether all provided in a function call arguments are supported.
-#' @param possible_args A vector of all available but not required arguments names (acceptable optional arguments defined as '...')
+#' @param gen Indicates on how many environments up is the function call which arguments are to be checked, relative to where check_req_args is called at. Equivalent to sys.parent's 'n' argument.
 #' @return  Returns a vector of arguments provided in a function call if all arguments are correct, otherwise function stops
 #' @examples
 #' \dontrun{
@@ -12,44 +12,30 @@
 #'  foo("a", "b", "c", "d")
 #' }
 #'
-check_req_args <- function(possible_args=NULL){
+check_req_args <- function(gen=0){
 
   # browser()
-  func_call <- as.list(match.call(definition = sys.function(sys.parent(2)),
-                                  call = sys.call(sys.parent(2)),
-                                  envir = parent.frame(2L)))
-  given_args <- func_call[2:length(func_call)]
-  required_args <- setdiff(do.call(methods::formalArgs, list(func_call[[1]])), "...")
-  # formal_args = rlang::fn_fmls(rlang::caller_fn(2))
-  # browser()
+  func_call <- as.list(match.call(definition = sys.function(sys.parent(gen)),
+                                  call = sys.call(sys.parent(gen)),
+                                  envir = parent.frame(gen)))
+  given_args <- func_call[2:length(func_call)] # Arguments given in a func call
+  # required_args <- setdiff(do.call(methods::formalArgs, list(func_call[[1]])), "...")
+  # Get arguments that are required, and don't have default value
+  possible_args <- formals(fun = sys.function(sys.parent(gen)), envir = parent.frame(gen))
+  required_args <- names(unlist(possible_args))# While unlisting a pairList arguments with default NULL are dropped out
+  possible_args <- names(possible_args)
 
-  msg <- ""
+
   missing_args <- setdiff(required_args, names(given_args))
   if(!rlang::is_empty(missing_args)){
-    msg <- paste0(msg, paste0("You did not provide all reqired arguments. Missing: ", paste(missing_args, collapse = ", ")))
-  }
-
-
-  if(!is.null(possible_args)){
-    wrong_arguments <- setdiff(names(given_args), possible_args)
-    if("" %in% wrong_arguments){
-      msg <- paste(msg, "OPTIONAL ARGUMENTS NEED TO BE NAMED!", paste0("Possible arguments are: ", paste(possible_args, collapse = ", ")), sep = "\n")
-    }
-
-    wrong_arguments <- setdiff(wrong_arguments, "")
-    if(!rlang::is_empty(wrong_arguments)){
-      msg <- paste(msg, paste0("Some of provided arguments are incorrect: ", paste(wrong_arguments, collapse = ", ")), sep="\n")
-    }
-  }
-
-  if(msg!=""){
+    msg <- paste0("You did not provide all reqired arguments. Missing: ", paste(missing_args, collapse = ", "))
     message(msg)
     opt <- options(show.error.messages = FALSE)
     on.exit(options(opt))
     stop()
   }
-  # browser()
-  return(list(formal_names=required_args, given_args=given_args))
+
+  return(list(formal_args=required_args, available_args=possible_args, given_args=given_args))
 }
 
 

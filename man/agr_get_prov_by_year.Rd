@@ -2,18 +2,45 @@
 % Please edit documentation in R/get_api.R
 \name{agr_get_prov_by_year}
 \alias{agr_get_prov_by_year}
-\title{Get a list of providers from a year}
+\title{Get a list of providers available in given year}
 \usage{
-agr_get_prov_by_year(year, ...)
+agr_get_prov_by_year(
+  year,
+  admin_branch = NULL,
+  provider_code = NULL,
+  provider_name = NULL,
+  nip = NULL,
+  regon = NULL,
+  post_code = NULL,
+  street = NULL,
+  town = NULL,
+  teryt = NULL
+)
 }
 \arguments{
-\item{year}{A year of a contract.}
+\item{year}{A year of agreements.}
 
-\item{...}{One or multiple argument to filter providers.}
+\item{admin_branch}{The number of one of 16 voivodships branches of NFZ; character with leading zero between 02-32, increased by 2.}
+
+\item{provider_code}{A part of or a full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy).}
+
+\item{provider_name}{A part of or a full provider's name (nazwa swiadczeniodawcy).}
+
+\item{nip}{A part of or a full provider's NIP code. NIP is a ten-digit code used to identify taxpayers in Poland.}
+
+\item{regon}{A part of or full REGON identification number (National Official Business Register).}
+
+\item{post_code}{Postal code of a provider's main location (headquarter). Given without a dash, just 5 digits.}
+
+\item{street}{Street name of provider's main location (headquarter).}
+
+\item{town}{A name of the provider's location town or city.}
+
+\item{teryt}{Location code (TREC) of the National Official Register of the Territorial Division of the Country (TERYT).}
 }
 \value{
 Returns data.table.
 }
 \description{
-Query a providers schema from agreements API for data about providers having contract with NFZ in a particular year and meeting any other specified with arguments criteria. A table contains contract's amount.
+Query a providers schema from agreements API for data about providers having contract with NFZ in a particular year and meeting any other specified criteria. A table contains contract's amount.
 }

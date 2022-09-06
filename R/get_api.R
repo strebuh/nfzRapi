@@ -2,16 +2,16 @@
 
 #' @title Get data from selected api type and schema provided available arguments
 #' @description General function to get data from selected NFZ API type (agreements, ...) and schema (ex. agreements or providers), provided list of available arguments. Function to be run inside outer function for selected API User given arguments are retrieved from appropriate environment.
-#' @param available_args List of available arguments for selected api schema.
+#' @param available_args Dictionary of function arguments and their corresponding equivalents in NFZ API.
 #' @param api_type A type of NFZ api to be queried.
 #' @param schema A name of schema of appropriate api.
 #' @param url_args A vector of obligatory arguments to be passed without keys as a part of the url <https://api.nfz.gov.pl/api_type/schema/url_args/url_args>.
 #' @return  Returns a data.table for requested query.
-get_request <- function(available_args,  api_type="app-umw-api", schema="agreements", url_args=NULL){
+get_request <- function(available_args, api_type="app-umw-api", schema="agreements", url_args=NULL){
 
   # Retrieve arguments and check their corectness
-  given_args <- check_req_args(possible_args=names(available_args)) # get_api_data,
-  formal_names <- given_args$formal_names
+  given_args <- check_req_args(gen=2) # get_api_data,
+  formal_names <- given_args$formal_args
   given_args <- given_args$given_args
 
   # Prepare query provided arguments
@@ -79,10 +79,16 @@ get_request <- function(available_args,  api_type="app-umw-api", schema="agreeme
 
 
 #' @title Get all agreements meeting criteria
-#' @description Query an agreement schema from agreements API to retrieve data about NFZ agreements meeting specified arguments.
+#' @description Query an agreement schema from agreements API to retrieve data about NFZ agreements meeting specified criteria
 #' @param year A year of agreements.
 #' @param admin_branch The number of one of 16 voivodships branches of NFZ; character with leading zero between 02-32, increased by 2.
-#' @param ... One or multiple argument to filter providers.
+#' @param service_type A part of or a full NFZ service type code (kod rodzaju swiadczen)
+#' @param product_code A part of or a full NFZ product type code (kod produktu kontraktowego)
+#' @param provider_code A part of or a full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy)
+#' @param provider_name A part of or a full provider's name (nazwa swiadczeniodawcy)
+#' @param town A name of the provider's location town or city
+#' @param nip A part of or a full provider's NIP code. NIP is a ten-digit code used to identify taxpayers in Poland.
+#' @param regon A part of or full REGON identification number (National Official Business Register).
 #' @return  Returns data.table.
 #' @export
 #' @examples
@@ -90,7 +96,8 @@ get_request <- function(available_args,  api_type="app-umw-api", schema="agreeme
 #'  get_agreements(year=2021, admin_branch='07', town='Siedlce')
 #' }
 # TODO: separate functions or a dictionary of API's addresses and possible arguments for each of them
-agr_get_agreements <- function(year, admin_branch, ...){
+agr_get_agreements <- function(year, admin_branch, service_type=NULL, product_code=NULL, provider_code=NULL,
+                               provider_name=NULL, town=NULL, nip=NULL, regon=NULL){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
@@ -145,11 +152,21 @@ agr_get_month_plan <- function(id_plan){
 
 
 #' @title Get a list of providers
-#' @description Query a providers schema from agreements API for data about providers with contracts with NFZ meeting with arguments criteria.
-#' @param ... One or multiple argument to filter providers.
+#' @description Query a providers schema from agreements API for data about providers having contracts with NFZ, meeting specified criteria.
+#' @param year A year of agreements.
+#' @param admin_branch The number of one of 16 voivodships branches of NFZ; character with leading zero between 02-32, increased by 2.
+#' @param provider_code A part of or a full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy).
+#' @param provider_name A part of or a full provider's name (nazwa swiadczeniodawcy).
+#' @param nip A part of or a full provider's NIP code. NIP is a ten-digit code used to identify taxpayers in Poland.
+#' @param regon A part of or full REGON identification number (National Official Business Register).
+#' @param post_code Postal code of a provider's main location (headquarter). Given without a dash, just 5 digits.
+#' @param street Street name of provider's main location (headquarter).
+#' @param town A name of the provider's location town or city.
+#' @param teryt Location code (TREC) of the National Official Register of the Territorial Division of the Country (TERYT).
 #' @return  Returns data.table.
 #' @export
-agr_get_providers <- function(...){
+agr_get_providers <- function(year=NULL, admin_branch=NULL, provider_code=NULL, provider_name=NULL, nip=NULL, regon=NULL,
+                              post_code=NULL, street=NULL, town=NULL, teryt=NULL){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
@@ -168,13 +185,22 @@ agr_get_providers <- function(...){
 }
 
 
-#' @title Get a list of providers from a year
-#' @description Query a providers schema from agreements API for data about providers having contract with NFZ in a particular year and meeting any other specified with arguments criteria. A table contains contract's amount.
-#' @param year A year of a contract.
-#' @param ... One or multiple argument to filter providers.
+#' @title Get a list of providers available in given year
+#' @description Query a providers schema from agreements API for data about providers having contract with NFZ in a particular year and meeting any other specified criteria. A table contains contract's amount.
+#' @param year A year of agreements.
+#' @param admin_branch The number of one of 16 voivodships branches of NFZ; character with leading zero between 02-32, increased by 2.
+#' @param provider_code A part of or a full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy).
+#' @param provider_name A part of or a full provider's name (nazwa swiadczeniodawcy).
+#' @param nip A part of or a full provider's NIP code. NIP is a ten-digit code used to identify taxpayers in Poland.
+#' @param regon A part of or full REGON identification number (National Official Business Register).
+#' @param post_code Postal code of a provider's main location (headquarter). Given without a dash, just 5 digits.
+#' @param street Street name of provider's main location (headquarter).
+#' @param town A name of the provider's location town or city.
+#' @param teryt Location code (TREC) of the National Official Register of the Territorial Division of the Country (TERYT).
 #' @return  Returns data.table.
 #' @export
-agr_get_prov_by_year <- function(year, ...){
+agr_get_prov_by_year <- function(year, admin_branch=NULL, provider_code=NULL, provider_name=NULL, nip=NULL,
+                                 regon=NULL, post_code=NULL, street=NULL, town=NULL, teryt=NULL){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
@@ -186,9 +212,7 @@ agr_get_prov_by_year <- function(year, ...){
                          post_code="postCode",
                          street="street",
                          town="place",
-                         teryt="commune",
-                         product_code="productCode",
-                         service_type="serviceType")
+                         teryt="commune")
 
   data <- get_request(available_args=available_args, schema="providers", api_type="app-umw-api", url_args="year")
   return(data)
@@ -222,7 +246,7 @@ agr_get_provider <- function(year, provider_code, admin_branch){
 #' @param service_name A full or part of NFZ a service type name (Nazwa rodzaju swiadczen)
 #' @return  Returns data.table.
 #' @export
-agr_get_serivces <- function(year, service_type, service_name){
+agr_get_serivces <- function(year, service_type=NULL, service_name=NULL){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
@@ -241,7 +265,7 @@ agr_get_serivces <- function(year, service_type, service_name){
 #' @param product_name A full or part of NFZ a product type name (Nazwa produktu kontraktowego)
 #' @return  Returns data.table.
 #' @export
-agr_get_products <- function(year, product_code, product_name){
+agr_get_products <- function(year, product_code=NULL, product_name=NULL){
 
   check_env_lang() # Check the settings of the language
   available_args <- list(year="year",

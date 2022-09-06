@@ -12,7 +12,7 @@ get_request(
 )
 }
 \arguments{
-\item{available_args}{List of available arguments for selected api schema.}
+\item{available_args}{Dictionary of function arguments and their corresponding equivalents in NFZ API.}
 
 \item{api_type}{A type of NFZ api to be queried.}
 

@@ -4,10 +4,10 @@
 \alias{check_req_args}
 \title{Check for function's arguments}
 \usage{
-check_req_args(possible_args = NULL)
+check_req_args(gen = 0)
 }
 \arguments{
-\item{possible_args}{A vector of all available but not required arguments names (acceptable optional arguments defined as '...')}
+\item{gen}{Indicates on how many environments up is the function call which arguments are to be checked, relative to where check_req_args is called at. Equivalent to sys.parent's 'n' argument.}
 }
 \value{
 Returns a vector of arguments provided in a function call if all arguments are correct, otherwise function stops

@@ -4,7 +4,7 @@
 \alias{agr_get_products}
 \title{Get a list of product types (Produkty Kontraktowe)}
 \usage{
-agr_get_products(year, product_code, product_name)
+agr_get_products(year, product_code = NULL, product_name = NULL)
 }
 \arguments{
 \item{year}{A year of a contract.}

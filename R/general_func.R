@@ -17,8 +17,16 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
   }
 
   # Retrieve arguments and check their corectness
-  given_args <- check_req_args(sys.parent(0)) # get_api_data,
   # browser()
+  # gen=sys.parent(0)
+  # func_call <- as.list(match.call(definition = sys.function(sys.parent(gen)),
+  #                                 call = sys.call(sys.parent(gen)),
+  #                                 envir = sys.frame(-gen))) # parent.frame(gen)
+  # func_call <- as.list(match.call(definition = sys.function(sys.parent(1)),
+  #                                 call = sys.call(sys.parent(2)),
+  #                                 envir = parent.frame(1))) #
+
+  given_args <- check_req_args(sys.parent(0)) # get_api_data, sys.parent(0)
   functions <- c("agr_get_agreements", "agr_get_agreement", "agr_get_plan", "agr_get_month_plan", "agr_get_providers", "agr_get_prov_by_year", "agr_get_provider",
                  "agr_get_serivces", "agr_get_products")
   if(!as.character(given_args$call_func) %in% functions){
@@ -42,7 +50,7 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
     optional_args = given_args
   }
   optionals_matcher <- if(rlang::is_empty(optional_args)) "" else "="
-
+  # browser()
   api_agrs <- paste0(sapply(names(optional_args), function(x) available_args[[x]]),
                      optionals_matcher,
                      sapply(names(optional_args), function(x) optional_args[[x]]))
@@ -53,17 +61,19 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
 
   # Get scope request (to know how much data is available)
   request <- httr::GET(api_query, httr::timeout(20))
+  request_data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
 
+  # browser()
   status_code <- request$status_code
   if(status_code != 200){
-    message(paste0('Request error, status code:', as.character(status_code), ". Check the arguments."))
-    opt <- options(show.error.messages = FALSE)
-    on.exit(options(opt))
-    stop()
+    # message(paste0('Request error, status code:', as.character(status_code), ". Check the arguments."))
+    # opt <- options(show.error.messages = FALSE)
+    # on.exit(options(opt))
+    # stop()
+    stop(paste0('Request error, status code:', as.character(status_code), ". Check the arguments."))
   }
 
   # Extract data from the request
-  request_data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
 
   data <- data.table::data.table()
   if(!is.null(request_data$data)){
@@ -87,7 +97,12 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
 
     }
   } else {
-    message('No availabe API data for queried scope. Please make sure the arguements are correct.')
+    # browser()
+    # message('No availabe API data for queried scope. Please make sure the arguements are correct.')
+    # opt <- options(show.error.messages = FALSE)
+    # on.exit(options(opt))
+    # stop()
+    stop('No availabe API data for queried scope. Please make sure the arguements are correct.')
   }
   # browser()
   return(data)
@@ -116,13 +131,13 @@ check_req_args <- function(gen=NULL){
   } else if(gen!=round(gen)){ # gen%%1 != 0
     stop("A stack number of an active frame/enviornemnt must be integer.")
   }
-
+  # browser()
   if(gen < 0){
     stop("A stack number of an active frame/enviornemnt can't be negative.")
   }
 
   gen = if(is.null(gen)) sys.parent(1) else gen # The stack number of an env in which check_req_args was called at
-  # browser()
+  browser()
   func_call <- as.list(match.call(definition = sys.function(sys.parent(gen)),
                                   call = sys.call(sys.parent(gen)),
                                   envir = sys.frame(-gen))) # parent.frame(gen)
@@ -138,13 +153,61 @@ check_req_args <- function(gen=NULL){
   missing_args <- setdiff(required_args, names(given_args))
   if(!rlang::is_empty(missing_args)){
     msg <- paste0("You did not provide all reqired arguments. Missing: ", paste(missing_args, collapse = ", "))
-    message(msg)
-    opt <- options(show.error.messages = FALSE)
-    on.exit(options(opt))
-    stop()
+    # message(msg)
+    # opt <- options(show.error.messages = FALSE)
+    # on.exit(options(opt))
+    stop(msg)
   }
 
   return(list(call_func = func_call[[1]], formal_args=required_args, available_args=possible_args, given_args=given_args))
+}
+
+
+agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL, service_name, product_code=NULL, provider_code, provider_name,
+                                product_name, nip, regon, post_code, street, town, teryt, id_agreement, id_plan){
+
+
+  if(!is.null(year)){
+    if(!nchar(year) == 4){
+      stop("Wrong format or type of year argument. Full 4 digits year expected.")
+    } else if(!year %in% agr_get_years()){
+      stop("Year arguemnt value out of range. To check available years call agr_get_years function.")
+    }
+  }
+
+
+  if(!is.null(admin_branch)){
+    possible_branches = sapply(1:16, function(x) ifelse(nchar(x)==1, paste0('0', x), as.character(x)))
+    if(!nchar(admin_branch) == 2){
+      stop("Wrong format or type of admin_branch argument. 2 digits admin_branch expected including leading zero if needed.")
+    } else if(!admin_branch %in% possible_branches){
+      stop("admin_branch arguemnt value out of range. admin_branch should be a number between 1 and 16 given as 2 digits character with leading zero.")
+    }
+  }
+
+  # if(!is.null(service_type)){
+  #   possible_types = agr_get_serivces_year(year)$attributes.code
+  #   if(!nchar(service_type) != 2){
+  #     stop("Wrong format or type of service_type argument. 2 digits service_type expected including leading zero if needed. Call agr_get_service_types(year) to retrieve possible types.")
+  #   } else if(!service_type %in% possible_types){
+  #     stop("service_type arguemnt value out of range. Call agr_get_service_types(year) to retrieve possible types.")
+  #   }
+  # }
+
+  # # TODO: Czy ma pobierac kody??
+  # if(!is.null(product_code)){
+  #   possible_products = agr_get_products_year(year)$attributes.code
+  #   if(!nchar(service_type) != 2){
+  #     stop("Wrong format or type of service_type argument. 2 digits service_type expected including leading zero if needed. Call agr_get_service_types(year) to retrieve possible types.")
+  #   } else if(!service_type %in% possible_types){
+  #     stop("service_type arguemnt value out of range. Call agr_get_service_types(year) to retrieve possible types.")
+  #   }
+  # }
+
+
+
+
+
 }
 
 

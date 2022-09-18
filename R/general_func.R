@@ -25,8 +25,9 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
   # func_call <- as.list(match.call(definition = sys.function(sys.parent(1)),
   #                                 call = sys.call(sys.parent(2)),
   #                                 envir = parent.frame(1))) #
-
-  given_args <- check_req_args(sys.parent(0)) # get_api_data, sys.parent(0)
+  # gen = if(is.null(gen)) sys.nframe() - 2 else gen
+  # browser()
+  given_args <- check_req_args(sys.parent(1)) # get_api_data, sys.parent(0)
   functions <- c("agr_get_agreements", "agr_get_agreement", "agr_get_plan", "agr_get_month_plan", "agr_get_providers", "agr_get_prov_by_year", "agr_get_provider",
                  "agr_get_serivces", "agr_get_products")
   if(!as.character(given_args$call_func) %in% functions){
@@ -124,7 +125,11 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
 #'  foo("a", "b", "c", "d")
 #' }
 #'
-check_req_args <- function(gen=NULL){
+check_req_args <- function(gen){ #
+
+  # browser()
+  # gen = if(is.null(gen)) sys.parent(1) else gen # The stack number of an env in which check_req_args was called at
+  # gen = if(is.null(gen)) sys.nframe() + 1 else gen
 
   if(!is.numeric(gen)){
     stop("A stack number of an active frame/enviornemnt must be integer.")
@@ -135,19 +140,17 @@ check_req_args <- function(gen=NULL){
     stop("A stack number of an active frame/enviornemnt can't be negative.")
   }
 
-  gen = if(is.null(gen)) sys.parent(1) else gen # The stack number of an env in which check_req_args was called at
-  # browser()
-  func_call <- as.list(match.call(definition = sys.function(sys.parent(gen)),
-                                  call = sys.call(sys.parent(gen)),
-                                  envir = sys.frame(-gen))) # parent.frame(gen)
+  func_call <- as.list(match.call(definition = sys.function(gen), # stack number of api function env (usually 1, but if nested into antohter funtion not 1)
+                                  call = sys.call(gen), # sys.call(sys.parent(gen)) # stack number of api function env (usually 1, but if nested into antohter funtion not 1)
+                                  envir = sys.frame(gen))) # parent.frame(gen) -gen
 
   # given_args <- func_call # Arguments given in a func call
-  browser()
+  # browser()
   given_args <- lapply(func_call[2:length(func_call)], function(e) ifelse(is.name(e), eval(e), e))
 
   # required_args <- setdiff(do.call(methods::formalArgs, list(func_call[[1]])), "...")
   # Get arguments that are required, and don't have default value
-  possible_args <- formals(fun = sys.function(sys.parent(gen)), envir = parent.frame(gen))
+  possible_args <- formals(fun = sys.function(gen), envir = sys.frame(gen))
   required_args <- names(unlist(possible_args))# While unlisting a pairList arguments with default NULL are dropped out
   possible_args <- names(possible_args)
 

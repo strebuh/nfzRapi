@@ -58,7 +58,7 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
 
   api_query <- paste0("https://api.nfz.gov.pl/", paste(formal_args, collapse = "/"), "?",
                       paste0(api_agrs, collapse = "&"), "&limit=1&format=json&api-version=1.2")
-
+  print(api_query)
   # Get scope request (to know how much data is available)
   request <- httr::GET(api_query, httr::timeout(20))
   request_data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
@@ -131,18 +131,20 @@ check_req_args <- function(gen=NULL){
   } else if(gen!=round(gen)){ # gen%%1 != 0
     stop("A stack number of an active frame/enviornemnt must be integer.")
   }
-  # browser()
   if(gen < 0){
     stop("A stack number of an active frame/enviornemnt can't be negative.")
   }
 
   gen = if(is.null(gen)) sys.parent(1) else gen # The stack number of an env in which check_req_args was called at
-  browser()
+  # browser()
   func_call <- as.list(match.call(definition = sys.function(sys.parent(gen)),
                                   call = sys.call(sys.parent(gen)),
                                   envir = sys.frame(-gen))) # parent.frame(gen)
 
-  given_args <- func_call[2:length(func_call)] # Arguments given in a func call
+  # given_args <- func_call # Arguments given in a func call
+  browser()
+  given_args <- lapply(func_call[2:length(func_call)], function(e) ifelse(is.name(e), eval(e), e))
+
   # required_args <- setdiff(do.call(methods::formalArgs, list(func_call[[1]])), "...")
   # Get arguments that are required, and don't have default value
   possible_args <- formals(fun = sys.function(sys.parent(gen)), envir = parent.frame(gen))

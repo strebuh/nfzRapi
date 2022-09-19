@@ -17,17 +17,7 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
   }
 
   # Retrieve arguments and check their corectness
-  # browser()
-  # gen=sys.parent(0)
-  # func_call <- as.list(match.call(definition = sys.function(sys.parent(gen)),
-  #                                 call = sys.call(sys.parent(gen)),
-  #                                 envir = sys.frame(-gen))) # parent.frame(gen)
-  # func_call <- as.list(match.call(definition = sys.function(sys.parent(1)),
-  #                                 call = sys.call(sys.parent(2)),
-  #                                 envir = parent.frame(1))) #
-  # gen = if(is.null(gen)) sys.nframe() - 2 else gen
-  # browser()
-  given_args <- check_req_args(sys.parent(1)) # get_api_data, sys.parent(0)
+  given_args <- check_req_args(sys.parent(1))
   functions <- c("agr_get_agreements", "agr_get_agreement", "agr_get_plan", "agr_get_month_plan", "agr_get_providers", "agr_get_prov_by_year", "agr_get_provider",
                  "agr_get_serivces", "agr_get_products")
   if(!as.character(given_args$call_func) %in% functions){
@@ -51,59 +41,57 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
     optional_args = given_args
   }
   optionals_matcher <- if(rlang::is_empty(optional_args)) "" else "="
-  # browser()
   api_agrs <- paste0(sapply(names(optional_args), function(x) available_args[[x]]),
                      optionals_matcher,
                      sapply(names(optional_args), function(x) optional_args[[x]]))
+  print(api_agrs)
   api_agrs <- convert_pl_signs(api_agrs)
 
   api_query <- paste0("https://api.nfz.gov.pl/", paste(formal_args, collapse = "/"), "?",
                       paste0(api_agrs, collapse = "&"), "&limit=1&format=json&api-version=1.2")
   print(api_query)
+  print(Sys.getlocale("LC_CTYPE"))
   # Get scope request (to know how much data is available)
   request <- httr::GET(api_query, httr::timeout(20))
   request_data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
 
-  # browser()
   status_code <- request$status_code
   if(status_code != 200){
-    # message(paste0('Request error, status code:', as.character(status_code), ". Check the arguments."))
-    # opt <- options(show.error.messages = FALSE)
-    # on.exit(options(opt))
-    # stop()
-    stop(paste0('Request error, status code:', as.character(status_code), ". Check the arguments."))
+    msg=paste0("No availabe data for queried scope. Please make sure the arguements are correct.\n",
+               "Request error, status code:", as.character(status_code))
+    message(msg)
+    return(NULL)
   }
 
+  # browser()
   # Extract data from the request
-
   data <- data.table::data.table()
   if(!is.null(request_data$data)){
 
     items_found <- request_data$meta$count
     message(paste0(items_found, ' items of data meeting requested criteria found.'))
+    api_query <- gsub("&limit=1", paste0("&page=", 1,"&limit=25"), api_query)
 
     # Get requests for all available data (max items per page 25 from API doc.)
     for(page in 1:ceiling(items_found/25)){
-      api_query <- gsub("&limit=1", paste0("&page=",page,"&limit=25"), api_query)
-      print(api_query)
 
+      api_query <- gsub("&page=\\d+&limit=25", paste0("&page=", page,"&limit=25"), api_query)
       request <- httr::GET(api_query, httr::timeout(20))
       request_data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
       data_attribute = sapply(request_data$data, class)
       data_attribute = match("data.frame", data_attribute)
-
       data <- rbind(data, request_data$data[[data_attribute]])
       page <- page + 1
       Sys.sleep(0.1)
 
     }
   } else {
+    msg=paste0("No availabe data for queried scope. Please make sure the arguements are correct.\n",
+                 "If any of the provided arguments contains Polish characters make sure the local encoding is one of 1250 variations. Run Sys.getlocale('LC_CTYPE') command; if it doesn't show any of 1250's ",
+                 "You may call Sys.setlocale('LC_CTYPE', 'Polish_Poland.1250') command.")
+    message(msg)
     # browser()
-    # message('No availabe API data for queried scope. Please make sure the arguements are correct.')
-    # opt <- options(show.error.messages = FALSE)
-    # on.exit(options(opt))
-    # stop()
-    stop('No availabe API data for queried scope. Please make sure the arguements are correct.')
+    return(NULL)
   }
   # browser()
   return(data)
@@ -113,7 +101,7 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
 
 #' @title Check for function's arguments
 #' @description To be run in local environment (inside another function). Checks whether all required arguments of function run in global env were provided during a function call. If a vector of possible arguments was given also checks whether all provided in a function call arguments are supported.
-#' @param gen The stack number of a frame (environment) at which the check_req_args was called in.
+#' @param gen The stack number of a frame (environment) which arguments are to be verified
 #' @return  Returns a vector of arguments provided in a function call if all arguments are correct, otherwise function stops
 #' @details `gen` describes a relative position or a stack number of check_req_args parent environment relative to a global environment (global has number 0). Can't be 0 or negative.
 #' @examples
@@ -125,15 +113,12 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
 #'  foo("a", "b", "c", "d")
 #' }
 #'
-check_req_args <- function(gen){ #
+check_req_args <- function(gen){
 
-  # browser()
-  # gen = if(is.null(gen)) sys.parent(1) else gen # The stack number of an env in which check_req_args was called at
-  # gen = if(is.null(gen)) sys.nframe() + 1 else gen
 
   if(!is.numeric(gen)){
     stop("A stack number of an active frame/enviornemnt must be integer.")
-  } else if(gen!=round(gen)){ # gen%%1 != 0
+  } else if(gen!=round(gen)){
     stop("A stack number of an active frame/enviornemnt must be integer.")
   }
   if(gen < 0){
@@ -144,11 +129,14 @@ check_req_args <- function(gen){ #
                                   call = sys.call(gen), # sys.call(sys.parent(gen)) # stack number of api function env (usually 1, but if nested into antohter funtion not 1)
                                   envir = sys.frame(gen))) # parent.frame(gen) -gen
 
-  # given_args <- func_call # Arguments given in a func call
-  # browser()
-  given_args <- lapply(func_call[2:length(func_call)], function(e) ifelse(is.name(e), eval(e), e))
+  given_args <- func_call[2:length(func_call)]
+  gen.2 = gen
+  while("name" %in% sapply(given_args, class)){
+    gen.2 <-  gen.2-1
+    given_args <- lapply(given_args, function(e) ifelse(is.name(e), eval(e, envir=sys.frame(gen.2)), e))
+  }
+  # print(given_args)
 
-  # required_args <- setdiff(do.call(methods::formalArgs, list(func_call[[1]])), "...")
   # Get arguments that are required, and don't have default value
   possible_args <- formals(fun = sys.function(gen), envir = sys.frame(gen))
   required_args <- names(unlist(possible_args))# While unlisting a pairList arguments with default NULL are dropped out
@@ -191,13 +179,19 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
   }
 
   # if(!is.null(service_type)){
-  #   possible_types = agr_get_serivces_year(year)$attributes.code
-  #   if(!nchar(service_type) != 2){
-  #     stop("Wrong format or type of service_type argument. 2 digits service_type expected including leading zero if needed. Call agr_get_service_types(year) to retrieve possible types.")
-  #   } else if(!service_type %in% possible_types){
-  #     stop("service_type arguemnt value out of range. Call agr_get_service_types(year) to retrieve possible types.")
+  #   possible_branches = sapply(1:16, function(x) ifelse(nchar(x)==1, paste0('0', x), as.character(x)))
+  #   if(!nchar(admin_branch) == 2){
+  #     stop("Wrong format or type of admin_branch argument. 2 digits admin_branch expected including leading zero if needed.")
+  #   } else if(!admin_branch %in% possible_branches){
+  #     stop("admin_branch arguemnt value out of range. admin_branch should be a number between 1 and 16 given as 2 digits character with leading zero.")
   #   }
   # }
+
+  if(!is.null(service_type)){
+    if(!is.character(service_type)){
+      stop("Wrong format or type of service_type argument. 2 digits character service_type expected (including leading zero if needed).")
+    }
+  }
 
   # # TODO: Czy ma pobierac kody??
   # if(!is.null(product_code)){
@@ -209,8 +203,88 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
   #   }
   # }
 
+  if(!is.null(service_name)){
+    if(!is.character(service_name)){
+      stop("Wrong format or type of service_name argument. Character expected.")
+    }
+  }
+
+  if(!is.null(product_code)){
+    if(!is.character(product_code)){
+      stop("Wrong format or type of product_code argument. Character expected.")
+    }
+  }
 
 
+  if(!is.null(provider_code)){
+    if(!is.character(provider_code)){
+      stop("Wrong format or type of provider_code argument. Character expected.")
+    }
+  }
+
+  if(!is.null(provider_name)){
+    if(!is.character(product_code)){
+      stop("Wrong format or type of provider_name argument. Character expected.")
+    }
+  }
+
+
+  if(!is.null(product_name)){
+    if(!is.character(product_name)){
+      stop("Wrong format or type of product_name argument. Character expected.")
+    }
+  }
+
+  if(!is.null(nip)){
+    if(!is.character(nip)){
+      stop("Wrong format or type of nip argument. Character expected.")
+    }
+  }
+
+
+  if(!is.null(regon)){
+    if(!is.character(regon)){
+      stop("Wrong format or type of regon argument. Character expected.")
+    }
+  }
+
+  if(!is.null(post_code)){
+    if(!is.character(post_code)){
+      stop("Wrong format or type of post_code argument. Character expected.")
+    }
+  }
+
+
+  if(!is.null(street)){
+    if(!is.character(street)){
+      stop("Wrong format or type of street argument. Character expected.")
+    }
+  }
+
+  if(!is.null(town)){
+    if(!is.character(town)){
+      stop("Wrong format or type of town argument. Character expected.")
+    }
+  }
+
+
+  if(!is.null(teryt)){
+    if(!is.character(teryt)){
+      stop("Wrong format or type of teryt argument. Character expected.")
+    }
+  }
+
+  if(!is.null(id_agreement)){
+    if(!is.character(id_agreement)){
+      stop("Wrong format or type of id_agreement argument. Character expected.")
+    }
+  }
+
+  if(!is.null(id_plan)){
+    if(!is.character(id_plan)){
+      stop("Wrong format or type of id_plan argument. Character expected.")
+    }
+  }
 
 
 }
@@ -273,6 +347,7 @@ convert_pl_signs <- function(char){
     `%C5%BA`="\u17A",
     `%C5%BC`="\u17C"
   )
+  # browser()
   char2 <- c()
   for(character in char){
     for(letter in unicode_dict){
@@ -281,6 +356,7 @@ convert_pl_signs <- function(char){
     }
     char2 <- c(char2, character)
   }
+  # browser()
   return(char2)
 }
 

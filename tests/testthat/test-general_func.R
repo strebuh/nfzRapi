@@ -23,21 +23,22 @@ test_that("convert_pl_signs corectness of conversion", {
 
 })
 
-test_that("check_env_lang language settings check", {
+# test_that("check_env_lang language settings check", {
+#
+#   org_lang = Sys.getlocale("LC_CTYPE")
+#   Sys.setlocale("LC_CTYPE", "Hungarian_Hungary.1250")
+#   expect_error(check_env_lang(), "The character set defined by LC_CTYPE environemt variable does not support Polish non ASCII characters.")
+#   Sys.setlocale("LC_CTYPE", org_lang)
+#
+# })
 
-  org_lang = Sys.getlocale("LC_CTYPE")
-  Sys.setlocale("LC_CTYPE", "Hungarian_Hungary.1250")
-  expect_error(check_env_lang(), "The character set defined by LC_CTYPE environemt variable does not support Polish non ASCII characters.")
-  Sys.setlocale("LC_CTYPE", org_lang)
-
-})
 
 
-
-test_that("get_request wrong context call error", {
-
-  expect_error(get_request(available_args=list(year=2020, ow=6), api_type="app-umw-api", schema="agreements"),
-               "Wrong context call; get_request should be called within one of higher level functions designed for communication with an API.")
-
-})
+# test_that("get_request wrong context call error", {
+#
+#   expect_error(get_request(available_args=list(year=2020, ow=6, town='Siedlce'), api_type="app-umw-api", schema="agreements",
+#                            given_args=list(call_func='agr_get_agreements', formal_args=c('year', 'ow'), given_args=c(year=2020, ow=6))),
+#                "Wrong context call; get_request should be called within one of higher level functions designed for communication with an API.")
+#
+# })
 

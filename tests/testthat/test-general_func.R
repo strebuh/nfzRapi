@@ -19,7 +19,8 @@ test_that("convert_pl_signs wrong argument type warning", {
 test_that("convert_pl_signs corectness of conversion", {
 
   expect_identical(convert_pl_signs(char="Ą Ć Ę Ł Ń Ó Ś Ź Ż ą ć ę ł ń ó ś ź ż"),
-                 "%C4%84 %C4%86 %C4%98 %C5%81 %C5%83 %C5%93 %C5%9A %C5%B9 %C5%BB %C5%85 %C5%87 %C5%99 %C5%82 %C5%84 %C3%B3 %C5%9B %C5%BA %C5%BC")
+                 paste0("%C4%84%20%C4%86%20%C4%98%20%C5%81%20%C5%83%20%C5%93%20%C5%9A%20%C5%B9%20%C5%BB",
+                        "%20%C5%85%20%C5%87%20%C5%99%20%C5%82%20%C5%84%20%C3%B3%20%C5%9B%20%C5%BA%20%C5%BC"))
 
 })
 

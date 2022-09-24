@@ -156,15 +156,15 @@ check_req_args <- function(gen){
 }
 
 
-agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL, service_name, product_code=NULL, provider_code, provider_name,
-                                product_name, nip, regon, post_code, street, town, teryt, id_agreement, id_plan){
+agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL, service_name=NULL, product_code=NULL, prod_code=NULL, provider_code=NULL, provider_name=NULL,
+                                product_name=NULL, nip=NULL, regon=NULL, post_code=NULL, street=NULL, town=NULL, teryt=NULL, id_agreement=NULL, id_plan=NULL){
 
 
   if(!is.null(year)){
     if(!nchar(year) == 4){
-      stop("Wrong format or type of year argument. Full 4 digits year expected.")
+      stop("Wrong format or type of year. Full 4 digits year expected.")
     } else if(!year %in% agr_get_years()){
-      stop("Year arguemnt value out of range. To check available years call agr_get_years function.")
+      stop("Year argument value out of range. To check available years call agr_get_years function.")
     }
   }
 
@@ -172,24 +172,35 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
   if(!is.null(admin_branch)){
     possible_branches = sapply(1:16, function(x) ifelse(nchar(x)==1, paste0('0', x), as.character(x)))
     if(!nchar(admin_branch) == 2){
-      stop("Wrong format or type of admin_branch argument. 2 digits admin_branch expected including leading zero if needed.")
+      stop("Wrong format or type of admin_branch. 2 digits admin_branch expected including leading zero if needed.")
     } else if(!admin_branch %in% possible_branches){
-      stop("admin_branch arguemnt value out of range. admin_branch should be a number between 1 and 16 given as 2 digits character with leading zero.")
+      stop("admin_branch argument value out of range. admin_branch should be a number between 1 and 16 given as 2 digits character with leading zero.")
     }
   }
 
-  # if(!is.null(service_type)){
-  #   possible_branches = sapply(1:16, function(x) ifelse(nchar(x)==1, paste0('0', x), as.character(x)))
-  #   if(!nchar(admin_branch) == 2){
-  #     stop("Wrong format or type of admin_branch argument. 2 digits admin_branch expected including leading zero if needed.")
-  #   } else if(!admin_branch %in% possible_branches){
-  #     stop("admin_branch arguemnt value out of range. admin_branch should be a number between 1 and 16 given as 2 digits character with leading zero.")
-  #   }
-  # }
+  if(!is.null(service_type)){
+    if(!is.null(year)){
+      possible_services = agr_get_serivces_year(year)$attributes.code # all functions
+      if(!nchar(service_type) == 2){
+        stop("Wrong format or type of service_type. 2 digits service_type expected including leading zero if needed.")
+      } else if(!service_type %in% possible_services){
+        stop(paste0("service_type argument value out of range. Possible values are: ", paste(possible_services, collapse = ", ")))
+      }
+    } else {
+      stop("year missing.")
+    }
+  }
 
   if(!is.null(service_type)){
     if(!is.character(service_type)){
-      stop("Wrong format or type of service_type argument. 2 digits character service_type expected (including leading zero if needed).")
+      stop("Wrong format or type of service_type. 2 digits character service_type expected (including leading zero if needed).")
+    }
+  }
+
+
+  if(!is.null(service_name)){
+    if(!is.character(service_name)){
+      stop("Wrong format or type of service_name. Character expected.")
     }
   }
 
@@ -197,92 +208,91 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
   # if(!is.null(product_code)){
   #   possible_products = agr_get_products_year(year)$attributes.code
   #   if(!nchar(service_type) != 2){
-  #     stop("Wrong format or type of service_type argument. 2 digits service_type expected including leading zero if needed. Call agr_get_service_types(year) to retrieve possible types.")
+  #     stop("Wrong format or type of service_type. 2 digits service_type expected including leading zero if needed. Call agr_get_service_types(year) to retrieve possible types.")
   #   } else if(!service_type %in% possible_types){
-  #     stop("service_type arguemnt value out of range. Call agr_get_service_types(year) to retrieve possible types.")
+  #     stop("service_type argument value out of range. Call agr_get_service_types(year) to retrieve possible types.")
   #   }
   # }
-
-  if(!is.null(service_name)){
-    if(!is.character(service_name)){
-      stop("Wrong format or type of service_name argument. Character expected.")
+  if(!is.null(product_code)){
+    if(!is.character(product_code) | !grepl("\\d{2}\\.\\d{4}\\.\\d{3}\\.\\d{2}", product_code)){
+      stop("Wrong format or type of product_code. Character 'dd.dddd.ddd.dd' expected.")
     }
   }
 
-  if(!is.null(product_code)){
+  if(!is.null(prod_code)){
     if(!is.character(product_code)){
-      stop("Wrong format or type of product_code argument. Character expected.")
+      stop("Wrong format or type of product_code. A full product code has a format of 'dd.dddd.ddd.dd', although it's part can be provided.")
     }
   }
 
 
   if(!is.null(provider_code)){
-    if(!is.character(provider_code)){
-      stop("Wrong format or type of provider_code argument. Character expected.")
+    if(!is.character(provider_code) | !grepl("\\d+", provider_code)){
+      stop("Wrong format or type of provider_code. Character expected.")
     }
   }
 
   if(!is.null(provider_name)){
-    if(!is.character(product_code)){
-      stop("Wrong format or type of provider_name argument. Character expected.")
+    if(!is.character(provider_name)){
+      stop("Wrong format or type of provider_name. Character expected.")
     }
   }
 
 
   if(!is.null(product_name)){
     if(!is.character(product_name)){
-      stop("Wrong format or type of product_name argument. Character expected.")
+      stop("Wrong format or type of product_name. Character expected.")
     }
   }
 
   if(!is.null(nip)){
-    if(!is.character(nip)){
-      stop("Wrong format or type of nip argument. Character expected.")
+    if(nchar(nip)!=10 | grepl("\\D", nip)){
+      stop("Wrong format or type of nip. 10 digits code expected.")
     }
   }
 
 
   if(!is.null(regon)){
-    if(!is.character(regon)){
-      stop("Wrong format or type of regon argument. Character expected.")
+    if(nchar(regon)>14 | grepl("\\D", regon)){
+      stop("Regon to long or contaning non-numeric elements. The max length of the code is 14 digits. If You provide it's subset, a function will return all records whose regon coinains provided subset.")
     }
   }
 
   if(!is.null(post_code)){
-    if(!is.character(post_code)){
-      stop("Wrong format or type of post_code argument. Character expected.")
+    if(nchar(post_code)>5 | grepl("\\D", post_code)){
+      stop("Wrong format or type of post_code. 5 digits post code without a hyphen ('-') expected.")
     }
   }
 
 
   if(!is.null(street)){
-    if(!is.character(street)){
-      stop("Wrong format or type of street argument. Character expected.")
+    if(!is.numeric(street) | (grepl("\\W", street) & grepl("\\D", street))){
+      stop("Wrong format or type of street. Character expected.")
     }
   }
 
   if(!is.null(town)){
     if(!is.character(town)){
-      stop("Wrong format or type of town argument. Character expected.")
+      stop("Wrong format or type of town. Character expected.")
     }
   }
 
 
   if(!is.null(teryt)){
     if(!is.character(teryt)){
-      stop("Wrong format or type of teryt argument. Character expected.")
+      stop("Wrong format or type of teryt. Character expected.")
     }
   }
 
   if(!is.null(id_agreement)){
     if(!is.character(id_agreement)){
-      stop("Wrong format or type of id_agreement argument. Character expected.")
+      stop("Wrong format or type of id_agreement. Character expected.")
     }
   }
 
   if(!is.null(id_plan)){
     if(!is.character(id_plan)){
-      stop("Wrong format or type of id_plan argument. Character expected.")
+      stop("Wrong format or type of id_plan. Character expected.")
     }
   }
 
@@ -345,7 +355,8 @@ convert_pl_signs <- function(char){
     `%C3%B3`="\uF3",
     `%C5%9B`="\u15B",
     `%C5%BA`="\u17A",
-    `%C5%BC`="\u17C"
+    `%C5%BC`="\u17C",
+    `%20`=" "
   )
   # browser()
   char2 <- c()

@@ -24,33 +24,29 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
     stop(paste("Wrong context call; get_request should be called within one of higher level functions designed for communication with an API."))
   }
 
-
   formal_names <- given_args$formal_args
   given_args <- given_args$given_args
-
 
   # Prepare query provided arguments
   formal_args = c(api_type, schema)
   if(!is.null(url_args)){
     n_formals = if(length(url_args) == length(given_args)) 0 else length(intersect(names(given_args), url_args))
     optional_args = if(length(url_args) == length(given_args)) list() else given_args[(n_formals+1):length(given_args)]
-
     formal_args = c(formal_args, unlist(setdiff(given_args, optional_args)))
-
   } else {
     optional_args = given_args
   }
   optionals_matcher <- if(rlang::is_empty(optional_args)) "" else "="
-  api_agrs <- paste0(sapply(names(optional_args), function(x) available_args[[x]]),
+  api_agrs <- paste0(sapply(names(optional_args), function(x) eval(available_args[[x]])),
                      optionals_matcher,
-                     sapply(names(optional_args), function(x) optional_args[[x]]))
-  print(api_agrs)
+                     sapply(names(optional_args), function(x) eval(optional_args[[x]])))
+  # print(api_agrs)
   api_agrs <- convert_pl_signs(api_agrs)
 
   api_query <- paste0("https://api.nfz.gov.pl/", paste(formal_args, collapse = "/"), "?",
                       paste0(api_agrs, collapse = "&"), "&limit=1&format=json&api-version=1.2")
-  print(api_query)
-  print(Sys.getlocale("LC_CTYPE"))
+  # print(api_query)
+  # print(Sys.getlocale("LC_CTYPE"))
   # Get scope request (to know how much data is available)
   request <- httr::GET(api_query, httr::timeout(20))
   request_data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
@@ -71,7 +67,6 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
     items_found <- request_data$meta$count
     message(paste0(items_found, ' items of data meeting requested criteria found.'))
     api_query <- gsub("&limit=1", paste0("&page=", 1,"&limit=25"), api_query)
-
     # Get requests for all available data (max items per page 25 from API doc.)
     for(page in 1:ceiling(items_found/25)){
 
@@ -130,12 +125,12 @@ check_req_args <- function(gen){
                                   envir = sys.frame(gen))) # parent.frame(gen) -gen
 
   given_args <- func_call[2:length(func_call)]
+  # !!!This won't pass test when test's run in a loop in devtools, because iterated element't is hidden in some env  and can't be evaluated
   gen.2 = gen
   while("name" %in% sapply(given_args, class)){
     gen.2 <-  gen.2-1
     given_args <- lapply(given_args, function(e) ifelse(is.name(e), eval(e, envir=sys.frame(gen.2)), e))
   }
-
   # Get arguments that are required, and don't have default value
   possible_args <- formals(fun = sys.function(gen), envir = sys.frame(gen))
   required_args <- names(unlist(possible_args))# While unlisting a pairList arguments with default NULL are dropped out
@@ -159,48 +154,64 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
                                 product_name=NULL, nip=NULL, regon=NULL, post_code=NULL, street=NULL, town=NULL, teryt=NULL, id_agreement=NULL, id_plan=NULL){
 
 
-  msg = "Wrong format or type of argument(s):"
+  err = "Wrong format or type of argument(s):"
+  msg = ""
   if(!is.null(year)){
     if(!nchar(year) == 4){
-      msg = paste(msg, "year - 4 digits expected.", sep="\n")
+      err = paste(err, "year - 4 digits expected.", sep="\n")
     } else if(!year %in% agr_get_years()){
-      msg = paste(msg, "Year out of range. To check available years call agr_get_years function.", sep="\n")
+      err = paste(err, "Year out of range. To check available years call agr_get_years function.", sep="\n")
     }
   }
 
+
+  # if(!is.null(admin_branch)){
+  #   possible_branches = sapply(1:16, function(x) ifelse(nchar(x)==1, paste0('0', x), as.character(x)))
+  #   if(!nchar(admin_branch) == 2){
+  #     err = paste(err, "admin_branch - 2 digits character code expected (including leading zero if needed).", sep="\n")
+  #   } else if(!admin_branch %in% possible_branches){
+  #     err = paste(err, "admin_branch - out of range. A code should be a number between 1 and 16 given as 2 digits character including leading zero.", sep="\n")
+  #   }
+  # }
 
   if(!is.null(admin_branch)){
-    possible_branches = sapply(1:16, function(x) ifelse(nchar(x)==1, paste0('0', x), as.character(x)))
-    if(!nchar(admin_branch) == 2){
-      msg = paste(msg, "admin_branch - 2 digits character code expected (including leading zero if needed).", sep="\n")
-    } else if(!admin_branch %in% possible_branches){
-      msg = paste(msg, "admin_branch - out of range. A code should be a number between 1 and 16 given as 2 digits character including leading zero.", sep="\n")
+    # browser()
+    if(grepl("\\D", admin_branch) | admin_branch==""){
+      err = paste(err, "admin_branch - A code should be a number between 1 and 16 (for precise results 2 digits character including leading zero).", sep="\n")
+    } else if(nchar(admin_branch) > 2){
+      err = paste(err, "admin_branch - out of range. A code should be a number between 1 and 16 (for precise results 2 digits character including leading zero).", sep="\n")
+    } else if(nchar(admin_branch) < 2){
+      msg = paste(msg, paste0("Given admin_branch length is ", nchar(admin_branch)," which can be ambiguous. Results returned for all codes that match given subset."), sep="\n")
     }
   }
+
+
+  # if(!is.null(service_type)){
+  #   if(!is.null(year)){
+  #     possible_services = agr_get_serivces_year(year)$attributes.code
+  #     if(!nchar(service_type) == 2){
+  #       err = paste(err, "service_type - 2 digits character code expected (including leading zero if needed).", sep="\n")
+  #     } else if(!service_type %in% possible_services){
+  #       err = paste(err, paste0("service_type - out of range. Possible values are: ", paste(possible_services, collapse = ", ")), sep="\n")
+  #     }
+  #   } else {
+  #     stop("year missing.")
+  #   }
+  # }
 
   if(!is.null(service_type)){
-    if(!is.null(year)){
-      possible_services = agr_get_serivces_year(year)$attributes.code # all functions
-      if(!nchar(service_type) == 2){
-        msg = paste(msg, "service_type - 2 digits character code expected (including leading zero if needed).", sep="\n")
-      } else if(!service_type %in% possible_services){
-        msg = paste(msg, paste0("service_type - out of range. Possible values are: ", paste(possible_services, collapse = ", ")), sep="\n")
-      }
-    } else {
-      stop("year missing.")
+    if(grepl("\\D", service_type) | service_type==""){
+      err = paste(err, "service_type - 2 digits character code expected (including leading zero if needed).", sep="\n")
+    } else if(nchar(service_type) > 2){
+      err = paste(err, "service_type - 2 digits character code expected (including leading zero if needed).", sep="\n")
+    } else if(nchar(service_type) < 2){
+      msg = paste(msg, paste0("Given service_type length is ", nchar(service_type)," which may be ambiguous. Results returned for all codes that match given subset."), sep="\n")
     }
   }
-
-  if(!is.null(service_type)){
-    if(!is.character(service_type)){
-      msg = paste(msg, "service_type - 2 digits character code expected (including leading zero if needed).", sep="\n")
-    }
-  }
-
 
   if(!is.null(service_name)){
     if(!is.character(service_name)){
-      msg = paste(msg, "service_name - character expected.", sep="\n")
+      err = paste(err, "service_name - character expected.", sep="\n")
     }
   }
 
@@ -217,52 +228,56 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
 
   if(!is.null(product_code)){
     if(!is.character(product_code) | !grepl("\\d{2}\\.\\d{4}\\.\\d{3}\\.\\d{2}", product_code)){
-      msg = paste(msg, "product_code -  character of dot separated decimals expected' format: 'dd.dddd.ddd.dd'.", sep="\n")
+      err = paste(err, "product_code - expected full code of 11 digits separated by dots, format: 'dd.dddd.ddd.dd'.", sep="\n")
     }
   }
 
   if(!is.null(prod_code)){
-    if(!is.character(prod_code)){
-      msg = paste(msg, "prod_code - full product code has a format of 'dd.dddd.ddd.dd', although it's part can be provided.", sep="\n")
+    # browser()
+    if(!is.character(prod_code) | grepl("(\\.(\\d{1}|\\d{5,})\\.)|((.*\\..*){4,})", prod_code)){
+      err = paste(err, "prod_code - character code of 11 digits separated by dots, full code correct format is: 'dd.dddd.ddd.dd' (subset can be provided).", sep="\n")
+    } else if(nchar(prod_code)>14){
+      err = paste(err, paste0("Given prod_code length is ", nchar(prod_code)," which is too long, full code correct format is: 'dd.dddd.ddd.dd' (subset can be provided)."), sep="\n")
+    } else if(nchar(prod_code)<14){
+      msg = paste(msg, paste0("Given prod_code length is ", nchar(prod_code)," which is not a full code, full code correct format is: 'dd.dddd.ddd.dd' (subset can be provided)."), sep="\n")
+    }
+  }
+
+  if(!is.null(product_name)){
+    if(!is.character(product_name)){
+      err = paste(err, "product_name - character expected.", sep="\n")
     }
   }
 
 
   if(!is.null(provider_code)){
     if(!is.character(provider_code) | !grepl("\\d+", provider_code)){
-      msg = paste(msg, "provider_code - character expected.", sep="\n")
+      err = paste(err, "provider_code - character expected.", sep="\n")
     }
   }
 
   if(!is.null(provider_name)){
     if(!is.character(provider_name)){
-      msg = paste(msg, "provider_name - character expected.", sep="\n")
-    }
-  }
-
-
-  if(!is.null(product_name)){
-    if(!is.character(product_name)){
-      msg = paste(msg, "product_name - character expected.", sep="\n")
+      err = paste(err, "provider_name - character expected.", sep="\n")
     }
   }
 
   if(!is.null(nip)){
     if(nchar(nip)!=10 | grepl("\\D", nip)){
-      msg = paste(msg, "nip - 10 digits code expected.", sep="\n")
+      err = paste(err, "nip - 10 digits code expected.", sep="\n")
     }
   }
 
 
   if(!is.null(regon)){
     if(nchar(regon)>14 | grepl("\\D", regon)){
-      msg = paste(msg, "regon - code too long or contaning non-numeric signs. The max length of the code is 14 digits. If code's subset provided, all records that match the subset will be returned.", sep="\n")
+      err = paste(err, "regon - code too long or contaning non-numeric signs. The max length of the code is 14 digits. If code's subset provided, all records that match the subset will be returned.", sep="\n")
     }
   }
 
   if(!is.null(post_code)){
     if(nchar(post_code)>5 | grepl("\\D", post_code)){
-      msg = paste(msg, "post_code - 5 digits post code without a hyphen ('-') expected.", sep="\n")
+      err = paste(err, "post_code - 5 digits post code without a hyphen ('-') expected.", sep="\n")
     }
   }
 
@@ -276,31 +291,36 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
 
   if(!is.null(town)){
     if(!is.character(town)){
-      msg = paste(msg, "town - character expected.", sep="\n")
+      err = paste(err, "town - character expected.", sep="\n")
     }
   }
 
 
   if(!is.null(teryt)){
     if(nchar(teryt)>7 | grepl("\\D", teryt)){
-      msg = paste(msg, "teryt - should consist of max 7 digits.", sep="\n")
+      err = paste(err, "teryt - should consist of max 7 digits.", sep="\n")
     }
   }
 
   if(!is.null(id_agreement)){
     if(!is.character(id_agreement)){
-      msg = paste(msg, "id_agreement - character expected.", sep="\n")
+      err = paste(err, "id_agreement - character expected.", sep="\n")
     }
   }
 
   if(!is.null(id_plan)){
     if(!is.character(id_plan)){
-      msg = paste(msg, "id_plan - character expected.", sep="\n")
+      err = paste(err, "id_plan - character expected.", sep="\n")
     }
   }
 
-  if(msg!="Wrong format or type of argument(s):"){
-    stop(msg)
+  if(msg!=""){
+    # browser()
+    warning(msg)
+  }
+
+  if(err!="Wrong format or type of argument(s):"){
+    stop(err)
   }
 
 }

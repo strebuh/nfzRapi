@@ -114,7 +114,7 @@ agr_get_providers <- function(year=NULL, admin_branch=NULL, provider_code=NULL, 
 
   agr_check_arg_types(year=year, admin_branch=admin_branch, provider_code=provider_code, provider_name=provider_name, town=town,
                       nip=nip, regon=regon, post_code=post_code, street=street, teryt=teryt)
-
+  # browser()
 
   data <- get_request(available_args=available_args, schema="providers", api_type="app-umw-api")
   return(data)
@@ -165,12 +165,12 @@ agr_get_prov_by_year <- function(year, admin_branch=NULL, provider_code=NULL, pr
 #' @param admin_branch NFZ voivodship branch code (OW).
 #' @return  Returns data.table.
 #' @export
-agr_get_provider <- function(year, provider_code, admin_branch){
+agr_get_provider <- function(year, provider_code, admin_branch){ # prov code 2nd, to correctly identify optional args
 
   # check_env_lang() # Check the settings of the language
   available_args <- list(year="year",
-                         admin_branch="branch",
-                         provider_code="code")
+                         provider_code="code",
+                         admin_branch="branch")
 
   agr_check_arg_types(year=year, admin_branch=admin_branch, provider_code=provider_code)
 

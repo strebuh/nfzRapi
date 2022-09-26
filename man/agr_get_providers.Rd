@@ -20,7 +20,7 @@ agr_get_providers(
 \arguments{
 \item{year}{A year of agreements.}
 
-\item{admin_branch}{The number of one of 16 voivodships branches of NFZ; character with leading zero between 02-32, increased by 2.}
+\item{admin_branch}{The number of one of 16 voivodships branches of NFZ; character type, a number in a range of 01-16 with leading zero.}
 
 \item{provider_code}{A part of or a full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy).}
 

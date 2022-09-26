@@ -4,10 +4,10 @@
 \alias{check_req_args}
 \title{Check for function's arguments}
 \usage{
-check_req_args(gen = NULL)
+check_req_args(gen)
 }
 \arguments{
-\item{gen}{The stack number of a frame (environment) at which the check_req_args was called in.}
+\item{gen}{The stack number of a frame (environment) which arguments are to be verified}
 }
 \value{
 Returns a vector of arguments provided in a function call if all arguments are correct, otherwise function stops

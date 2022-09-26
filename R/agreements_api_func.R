@@ -44,43 +44,43 @@ agr_get_agreements <- function(year, admin_branch, service_type=NULL, product_co
 }
 
 
-#' #' @title Get a particular agreement general details
-#' #' @description Query an agreement schema from agreements API for contract's number of units, prices and average price split by products.
-#' #' @param id_agreement A hashed id of NFZ agreement.
-#' #' @return  Returns data.table containing data about particular agreements.
-#' #' @export
-#' agr_get_agreement <- function(id_agreement){
-#'   check_env_lang() # Check the settings of the language
-#'   given_args <- check_req_args(sys.parent(0))
-#'   data <- get_request(available_args=list(id_agreement="id"), schema="agreements", api_type="app-umw-api", url_args="id_agreement", given_args=given_args)
-#'   return(data)
-#' }
+# #' @title Get a particular agreement general details
+# #' @description Query an agreement schema from agreements API for contract's number of units, prices and average price split by products.
+# #' @param id_agreement A hashed id of NFZ agreement.
+# #' @return  Returns data.table containing data about particular agreements.
+# #' @export
+# agr_get_agreement <- function(id_agreement){
+#   check_env_lang() # Check the settings of the language
+#   given_args <- check_req_args(sys.parent(0))
+#   data <- get_request(available_args=list(id_agreement="id"), schema="agreements", api_type="app-umw-api", url_args="id_agreement", given_args=given_args)
+#   return(data)
+# }
 
 
-#' #' @title Get a particular agreement general data by months
-#' #' @description Query an agreement schema from agreements API for data about about a particular agreement split by months. Data contains number of units, price and average price without.
-#' #' @param id_agreement A hashed id of a NFZ agreement.
-#' #' @return  Returns data.table.
-#' #' @export
-#' agr_get_plan <- function(id_agreement){
-#'   # check_env_lang() # Check the settings of the language
-#'   agr_check_arg_types(id_agreement=id_agreement)
-#'   data <- get_request(available_args=list(id_agreement="id"), schema="plans", api_type="app-umw-api", url_args="id_agreement")
-#'   return(data)
-#' }
+# #' @title Get a particular agreement general data by months
+# #' @description Query an agreement schema from agreements API for data about about a particular agreement split by months. Data contains number of units, price and average price without.
+# #' @param id_agreement A hashed id of a NFZ agreement.
+# #' @return  Returns data.table.
+# #' @export
+# agr_get_plan <- function(id_agreement){
+#   # check_env_lang() # Check the settings of the language
+#   agr_check_arg_types(id_agreement=id_agreement)
+#   data <- get_request(available_args=list(id_agreement="id"), schema="plans", api_type="app-umw-api", url_args="id_agreement")
+#   return(data)
+# }
 
 
-#' #' @title Get an agreement particular month's plan
-#' #' @description Query an agreement schema from agreements API for data about a particular agreement month plan split by products. Data contains number of units, price and average price by products.
-#' #' @param id_plan A hashed id of a month plan of a NFZ agreement.
-#' #' @return  Returns data.table.
-#' #' @export
-#' agr_get_month_plan <- function(id_plan){
-#'   # check_env_lang() # Check the settings of the language
-#'   agr_check_arg_types(id_plan=id_plan)
-#'   data <- get_request(available_args=list(id_plan="id"), schema="months", api_type="app-umw-api", url_args="id_plan")
-#'   return(data)
-#' }
+# #' @title Get an agreement particular month's plan
+# #' @description Query an agreement schema from agreements API for data about a particular agreement month plan split by products. Data contains number of units, price and average price by products.
+# #' @param id_plan A hashed id of a month plan of a NFZ agreement.
+# #' @return  Returns data.table.
+# #' @export
+# agr_get_month_plan <- function(id_plan){
+#   # check_env_lang() # Check the settings of the language
+#   agr_check_arg_types(id_plan=id_plan)
+#   data <- get_request(available_args=list(id_plan="id"), schema="months", api_type="app-umw-api", url_args="id_plan")
+#   return(data)
+# }
 
 
 #' @title Get a list of providers
@@ -203,7 +203,7 @@ agr_get_serivces <- function(year, service_type=NULL, service_name=NULL){
 
 #' @title Get service types available for a given year
 #' @description Function to retrieve all service types valid for a given year
-#' @param year
+#' @param year a year for valid services
 #' @return  Returns a data.table
 #' @export
 agr_get_serivces_year <- function(year){
@@ -215,17 +215,17 @@ agr_get_serivces_year <- function(year){
 }
 
 
-#' #' @title Get product types available for a given year
-#' #' @description Function to retrieve a all product types valid for a given year
-#' #' @param year
-#' #' @return  Returns a data.table
-#' #' @export
-#' agr_get_products_year <- function(year){
-#'   request <- httr::GET(paste0("https://api.nfz.gov.pl/app-umw-api/contract-products?year=", year, "&page=1&limit=10&format=json&api-version=1.2"), httr::timeout(20))
-#'   data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
-#'   data <- data$data$entries
-#'   return(data)
-#' }
+# #' @title Get product types available for a given year
+# #' @description Function to retrieve a all product types valid for a given year
+# #' @param year
+# #' @return  Returns a data.table
+# #' @export
+# agr_get_products_year <- function(year){
+#   request <- httr::GET(paste0("https://api.nfz.gov.pl/app-umw-api/contract-products?year=", year, "&page=1&limit=10&format=json&api-version=1.2"), httr::timeout(20))
+#   data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
+#   data <- data$data$entries
+#   return(data)
+# }
 
 
 #' @title Get a list of product types (Produkty Kontraktowe)

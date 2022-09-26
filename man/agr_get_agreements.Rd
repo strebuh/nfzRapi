@@ -12,26 +12,23 @@ agr_get_agreements(
   provider_code = NULL,
   provider_name = NULL,
   town = NULL,
-  nip = NULL,
   regon = NULL
 )
 }
 \arguments{
 \item{year}{A year of agreements.}
 
-\item{admin_branch}{The number of one of 16 voivodships branches of NFZ; character with leading zero between 02-32, increased by 2.}
+\item{admin_branch}{The number of one of 16 voivodships branches of NFZ; character type, a number in a range of 01-16 with leading zero.}
 
 \item{service_type}{A part of or a full NFZ service type code (kod rodzaju swiadczen)}
 
-\item{product_code}{A part of or a full NFZ product type code (kod produktu kontraktowego)}
+\item{product_code}{NFZ product type code (kod produktu kontraktowego)}
 
 \item{provider_code}{A part of or a full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy)}
 
 \item{provider_name}{A part of or a full provider's name (nazwa swiadczeniodawcy)}
 
 \item{town}{A name of the provider's location town or city}
-
-\item{nip}{A part of or a full provider's NIP code. NIP is a ten-digit code used to identify taxpayers in Poland.}
 
 \item{regon}{A part of or full REGON identification number (National Official Business Register).}
 }
@@ -40,6 +37,9 @@ Returns data.table.
 }
 \description{
 Query an agreement schema from agreements API to retrieve data about NFZ agreements meeting specified criteria
+}
+\details{
+\code{gen} describes a relative position or a stack number of check_req_args parent environment relative to a global environment (global has number 0). Can't be 0 or negative.
 }
 \examples{
 \dontrun{

@@ -1,0 +1,49 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# nfzRapi
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+nfzRapi is a set of functions to get data from `https://api.nfz.gov.pl/app-umw-api/` - an API of Narodowy Fundusz Zdrowia. As for September 2022 availabe functions let the user to get general data about agreements and providers.
+
+## Installation
+
+You can install the development version of nfzRapi from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("strebuh/nfzRapi")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(nfzRapi)
+
+# get available years
+agr_get_years()
+
+## get agreements of providers in Łosice, Mazovian voivodship in 2020
+df = agr_get_agreements(year=2020, admin_branch='07', town="Łosice", service_type='03')
+
+
+## get detail about providers in the same year and town
+df2 = agr_get_providers(year=2020, admin_branch='07', town="Łosice")
+```
+

@@ -22,13 +22,13 @@ agr_get_prov_by_year(
 
 \item{admin_branch}{The number of one of 16 voivodships branches of NFZ; character type, a number in a range of 01-16 with leading zero.}
 
-\item{provider_code}{A part of or a full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy).}
+\item{provider_code}{Part of or full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy).}
 
-\item{provider_name}{A part of or a full provider's name (nazwa swiadczeniodawcy).}
+\item{provider_name}{Part of or full provider's name (nazwa swiadczeniodawcy).}
 
-\item{nip}{A part of or a full provider's NIP code. NIP is a ten-digit code used to identify taxpayers in Poland.}
+\item{nip}{Part of or full provider's NIP code. NIP is a ten-digit code used to identify taxpayers in Poland.}
 
-\item{regon}{A part of or full REGON identification number (National Official Business Register).}
+\item{regon}{Part of or full REGON identification number (National Official Business Register).}
 
 \item{post_code}{Postal code of a provider's main location (headquarter). Given without a dash, just 5 digits.}
 
@@ -42,5 +42,5 @@ agr_get_prov_by_year(
 Returns data.table.
 }
 \description{
-Query a providers schema from agreements API for data about providers having contract with NFZ in a particular year and meeting any other specified criteria. A table contains contract's amount.
+Query providers schema from agreements API for data about providers having contract with NFZ in a particular year and meeting any other specified criteria. A table contains contract's amount.
 }

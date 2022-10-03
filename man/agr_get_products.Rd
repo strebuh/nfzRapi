@@ -9,9 +9,9 @@ agr_get_products(year, prod_code = NULL, product_name = NULL)
 \arguments{
 \item{year}{A year of a contract.}
 
-\item{prod_code}{A full or part of NFZ a product type code (Kod produktu kontraktowego)}
+\item{prod_code}{Full or part of NFZ a product type code (Kod produktu kontraktowego)}
 
-\item{product_name}{A full or part of NFZ a product type name (Nazwa produktu kontraktowego)}
+\item{product_name}{Full or part of NFZ a product type name (Nazwa produktu kontraktowego)}
 }
 \value{
 Returns data.table.

@@ -4,14 +4,14 @@
 \alias{agr_get_serivces}
 \title{Get a list of service types (Rodzaje Swiadczen)}
 \usage{
-agr_get_serivces(year, service_type = NULL, service_name = NULL)
+agr_get_serivces(year, service_code = NULL, service_name = NULL)
 }
 \arguments{
 \item{year}{A year of a contract.}
 
-\item{service_type}{A full or part of NFZ a service type code (Kod rodzaju swiadczen)}
+\item{service_code}{Full or part of NFZ a service type code (Kod rodzaju swiadczen)}
 
-\item{service_name}{A full or part of NFZ a service type name (Nazwa rodzaju swiadczen)}
+\item{service_name}{Full or part of NFZ a service type name (Nazwa rodzaju swiadczen)}
 }
 \value{
 Returns data.table.

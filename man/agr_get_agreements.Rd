@@ -20,17 +20,17 @@ agr_get_agreements(
 
 \item{admin_branch}{The number of one of 16 voivodships branches of NFZ; character type, a number in a range of 01-16 with leading zero.}
 
-\item{service_type}{A part of or a full NFZ service type code (kod rodzaju swiadczen)}
+\item{service_type}{Full NFZ service type code (kod rodzaju swiadczen)}
 
-\item{product_code}{NFZ product type code (kod produktu kontraktowego)}
+\item{product_code}{Full NFZ product type code (kod produktu kontraktowego)}
 
-\item{provider_code}{A part of or a full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy)}
+\item{provider_code}{Part of or full provider's code assigned by NFZ for contracting purposes (kod swiadczeniodawcy)}
 
-\item{provider_name}{A part of or a full provider's name (nazwa swiadczeniodawcy)}
+\item{provider_name}{Part of or full provider's name (nazwa swiadczeniodawcy)}
 
 \item{town}{A name of the provider's location town or city}
 
-\item{regon}{A part of or full REGON identification number (National Official Business Register).}
+\item{regon}{Part of or full REGON identification number (National Official Business Register).}
 }
 \value{
 Returns data.table.

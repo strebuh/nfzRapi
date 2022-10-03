@@ -14,12 +14,12 @@ test_that("agr_get_agreements wrong argument error", {
   }
 
 
-  for(wrong in list(127, 'string', '')){
+  for(wrong in list(2, 127, 'string', '')){
     expect_error(agr_get_agreements(year=2020, admin_branch=wrong), "Wrong format or type of argument\\(s\\):")
   }
-  # agr_get_agreements(year=2020, admin_branch='')
 
-  for(wrong in list(777, '312')){
+
+  for(wrong in list(3, 777, '312')){
     expect_error(agr_get_agreements(year=2020, admin_branch='07', service_type=wrong), "Wrong format or type of argument\\(s\\):")
   }
 
@@ -76,7 +76,7 @@ for(wrong in list(18, 2025, 'some sting')){
 }
 
 # agr_get_providers(year=2020, admin_branch='07')
-for(wrong in list(777, 'string', '')){
+for(wrong in list(2, 777, 'string', '')){
   expect_error(agr_get_providers(year=2020, admin_branch=wrong), "Wrong format or type of argument\\(s\\):")
 }
 
@@ -139,7 +139,7 @@ test_that("agr_get_prov_by_year wrong argument error", {
   }
 
   # agr_get_prov_by_year(year=2020, admin_branch='07')
-  for(wrong in list(123, 'string', '')){
+  for(wrong in list(2, 123, 'string', '')){
     expect_error(agr_get_prov_by_year(year=2020, admin_branch=wrong), "Wrong format or type of argument\\(s\\):")
   }
 
@@ -202,7 +202,7 @@ test_that("agr_get_provider wrong argument error", {
   }
 
   # agr_get_provider(year=2020, admin_branch='07', provider_code='70603563')
-  for(wrong in list(777, 'string', '')){
+  for(wrong in list(2, 777, 'string', '')){
     expect_error(agr_get_provider(year=2020, admin_branch=wrong, provider_code='70603563'), "Wrong format or type of argument\\(s\\):")
   }
 
@@ -216,16 +216,16 @@ test_that("agr_get_provider wrong argument error", {
 
 test_that("agr_get_serivces wrong argument error", {
 
-  # agr_get_serivces(year, service_type=NULL, service_name=NULL)
-  expect_error(agr_get_serivces(year=2020, service_type='04', unexcpected_arg=3), "unused argument")
+  # agr_get_serivces(year, service_code=NULL, service_name=NULL)
+  expect_error(agr_get_serivces(year=2020, service_code='04', unexcpected_arg=3), "unused argument")
 
   for(wrong in list(18, 2025, 'some sting')){
     expect_error(agr_get_serivces(year=wrong), "Wrong format or type of argument\\(s\\):")
   }
 
-  # agr_get_serivces(year=2020, service_type='07')
+  # agr_get_serivces(year=2020, service_code='07')
   for(wrong in list(123, 'string', '')){
-    expect_error(agr_get_serivces(year=2020, service_type=wrong), "Wrong format or type of argument\\(s\\):")
+    expect_error(agr_get_serivces(year=2020, service_code=wrong), "Wrong format or type of argument\\(s\\):")
   }
 
   # agr_get_serivces(year=2020, admin_branch='07', provider_name="SZPITAL", town="siedlce")
@@ -257,7 +257,7 @@ test_that("agr_get_serivces_year wrong argument error", {
 test_that("agr_get_products wrong argument error", {
 
   # agr_get_products(year, prod_code=NULL, product_name=NULL)
-  expect_error(agr_get_products(year=2020, service_type='04', unexcpected_arg=3), "unused argument")
+  expect_error(agr_get_products(year=2020, unexcpected_arg=3), "unused argument")
 
   for(wrong in list(18, 2025, 'some sting')){
     expect_error(agr_get_products(year=wrong), "Wrong format or type of argument\\(s\\):")
@@ -281,18 +281,8 @@ test_that("agr_get_products wrong argument message or warning", {
 
 })
 
-# source("R/agreements_api_func.R")
-# source("R/general_func.R")
 
-# test_that("town Polish language characters intepretation", {
-#
-#   # org_lang <-  Sys.getlocale("LC_CTYPE")
-#   Sys.setlocale("LC_CTYPE", "English_United Kingdom.1252")
-#   exp_message <- "No availabe data for queried scope. Please make sure the arguements are correct."
-#   expect_message(agr_get_agreements(year=2020, admin_branch='05', town="Łódź", product_code='03.4000.130.02'), exp_message) # trzeba caly kod
-#   # Sys.setlocale("LC_CTYPE", org_lang)
-#
-#
-# })
+
+
 
 

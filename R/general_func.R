@@ -40,13 +40,11 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
   api_agrs <- paste0(sapply(names(optional_args), function(x) eval(available_args[[x]])),
                      optionals_matcher,
                      sapply(names(optional_args), function(x) eval(optional_args[[x]])))
-  # print(api_agrs)
   api_agrs <- convert_pl_signs(api_agrs)
 
   api_query <- paste0("https://api.nfz.gov.pl/", paste(formal_args, collapse = "/"), "?",
                       paste0(api_agrs, collapse = "&"), "&limit=1&format=json&api-version=1.2")
-  # print(api_query)
-  # print(Sys.getlocale("LC_CTYPE"))
+  print(api_query)
   # Get scope request (to know how much data is available)
   request <- httr::GET(api_query, httr::timeout(20))
   request_data <- jsonlite::fromJSON(httr::content(request, "text"), flatten=TRUE)
@@ -59,7 +57,6 @@ get_request <- function(available_args, api_type="app-umw-api", schema="agreemen
     return(NULL)
   }
 
-  # browser()
   # Extract data from the request
   data <- data.table::data.table()
   if(!is.null(request_data$data)){
@@ -136,13 +133,9 @@ check_req_args <- function(gen){
   required_args <- names(unlist(possible_args))# While unlisting a pairList arguments with default NULL are dropped out
   possible_args <- names(possible_args)
 
-
   missing_args <- setdiff(required_args, names(given_args))
   if(!rlang::is_empty(missing_args)){
     msg <- paste0("You did not provide all reqired arguments. Missing: ", paste(missing_args, collapse = ", "))
-    # message(msg)
-    # opt <- options(show.error.messages = FALSE)
-    # on.exit(options(opt))
     stop(msg)
   }
 
@@ -150,8 +143,9 @@ check_req_args <- function(gen){
 }
 
 
-agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL, service_name=NULL, product_code=NULL, prod_code=NULL, provider_code=NULL, provider_name=NULL,
-                                product_name=NULL, nip=NULL, regon=NULL, post_code=NULL, street=NULL, town=NULL, teryt=NULL, id_agreement=NULL, id_plan=NULL){
+agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL, service_code=NULL, service_name=NULL, product_code=NULL, prod_code=NULL,
+                                provider_code=NULL, provider_name=NULL, product_name=NULL, nip=NULL, regon=NULL, post_code=NULL, street=NULL, town=NULL,
+                                teryt=NULL, id_agreement=NULL, id_plan=NULL){
 
 
   err = "Wrong format or type of argument(s):"
@@ -164,48 +158,34 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
     }
   }
 
-
-  # if(!is.null(admin_branch)){
-  #   possible_branches = sapply(1:16, function(x) ifelse(nchar(x)==1, paste0('0', x), as.character(x)))
-  #   if(!nchar(admin_branch) == 2){
-  #     err = paste(err, "admin_branch - 2 digits character code expected (including leading zero if needed).", sep="\n")
-  #   } else if(!admin_branch %in% possible_branches){
-  #     err = paste(err, "admin_branch - out of range. A code should be a number between 1 and 16 given as 2 digits character including leading zero.", sep="\n")
-  #   }
-  # }
-
   if(!is.null(admin_branch)){
-    # browser()
-    if(grepl("\\D", admin_branch) | admin_branch==""){
+    if(grepl("\\D", admin_branch) | admin_branch=="" | !is.character(admin_branch)){
       err = paste(err, "admin_branch - A code should be a number between 1 and 16 (for precise results 2 digits character including leading zero).", sep="\n")
     } else if(nchar(admin_branch) > 2){
       err = paste(err, "admin_branch - out of range. A code should be a number between 1 and 16 (for precise results 2 digits character including leading zero).", sep="\n")
-    } else if(nchar(admin_branch) < 2){
-      msg = paste(msg, paste0("Given admin_branch length is ", nchar(admin_branch)," which can be ambiguous. Results returned for all codes that match given subset."), sep="\n")
     }
   }
 
-
-  # if(!is.null(service_type)){
-  #   if(!is.null(year)){
-  #     possible_services = agr_get_serivces_year(year)$attributes.code
-  #     if(!nchar(service_type) == 2){
-  #       err = paste(err, "service_type - 2 digits character code expected (including leading zero if needed).", sep="\n")
-  #     } else if(!service_type %in% possible_services){
-  #       err = paste(err, paste0("service_type - out of range. Possible values are: ", paste(possible_services, collapse = ", ")), sep="\n")
-  #     }
-  #   } else {
-  #     stop("year missing.")
-  #   }
-  # }
-
   if(!is.null(service_type)){
-    if(grepl("\\D", service_type) | service_type==""){
-      err = paste(err, "service_type - 2 digits character code expected (including leading zero if needed).", sep="\n")
-    } else if(nchar(service_type) > 2){
-      err = paste(err, "service_type - 2 digits character code expected (including leading zero if needed).", sep="\n")
-    } else if(nchar(service_type) < 2){
-      msg = paste(msg, paste0("Given service_type length is ", nchar(service_type)," which may be ambiguous. Results returned for all codes that match given subset."), sep="\n")
+    if(!is.null(year)){
+      possible_services = agr_get_serivces_year(year)$attributes.code
+      if(!nchar(service_type) == 2){
+        err = paste(err, "service_type - 2 digits character code expected (including leading zero if needed).", sep="\n")
+      } else if(!service_type %in% possible_services){
+        err = paste(err, paste0("service_type - out of range. Possible values are: ", paste(possible_services, collapse = ", ")), sep="\n")
+      }
+    } else {
+      stop("year missing.")
+    }
+  }
+
+  if(!is.null(service_code)){
+    if(grepl("\\D", service_code) | service_code==""){
+      err = paste(err, "service_code - 2 digits character code expected (including leading zero if needed).", sep="\n")
+    } else if(nchar(service_code) > 2){
+      err = paste(err, "service_code - 2 digits character code expected (including leading zero if needed).", sep="\n")
+    } else if(nchar(service_code) < 2){
+      msg = paste(msg, paste0("Given service_code length is ", nchar(service_code)," which may be ambiguous. Results returned for all codes that match given subset."), sep="\n")
     }
   }
 
@@ -215,17 +195,6 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
     }
   }
 
-  # # TODO: Czy ma pobierac kody??
-  # if(!is.null(product_code)){
-  #   possible_products = agr_get_products_year(year)$attributes.code
-  #   if(!nchar(service_type) != 2){
-  #     stop("Wrong format or type of service_type. 2 digits service_type expected including leading zero if needed. Call agr_get_service_types(year) to retrieve possible types.")
-  #   } else if(!service_type %in% possible_types){
-  #     stop("service_type argument value out of range. Call agr_get_service_types(year) to retrieve possible types.")
-  #   }
-  # }
-
-
   if(!is.null(product_code)){
     if(!is.character(product_code) | !grepl("\\d{2}\\.\\d{4}\\.\\d{3}\\.\\d{2}", product_code)){
       err = paste(err, "product_code - expected full code of 11 digits separated by dots, format: 'dd.dddd.ddd.dd'.", sep="\n")
@@ -233,7 +202,6 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
   }
 
   if(!is.null(prod_code)){
-    # browser()
     if(!is.character(prod_code) | grepl("(\\.(\\d{1}|\\d{5,})\\.)|((.*\\..*){4,})", prod_code)){
       err = paste(err, "prod_code - character code of 11 digits separated by dots, full code correct format is: 'dd.dddd.ddd.dd' (subset can be provided).", sep="\n")
     } else if(nchar(prod_code)>14){
@@ -248,7 +216,6 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
       err = paste(err, "product_name - character expected.", sep="\n")
     }
   }
-
 
   if(!is.null(provider_code)){
     if(!is.character(provider_code) | !grepl("\\d+", provider_code)){
@@ -268,7 +235,6 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
     }
   }
 
-
   if(!is.null(regon)){
     if(nchar(regon)>14 | grepl("\\D", regon)){
       err = paste(err, "regon - code too long or contaning non-numeric signs. The max length of the code is 14 digits. If code's subset provided, all records that match the subset will be returned.", sep="\n")
@@ -281,20 +247,11 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
     }
   }
 
-
-  # if(!is.null(street)){
-  #   if(!is.numeric(street) | (grepl("\\W", street) & grepl("\\D", street))){
-  #     stop("Wrong format or type of street.")
-  #   }
-  # }
-
-
   if(!is.null(town)){
     if(!is.character(town)){
       err = paste(err, "town - character expected.", sep="\n")
     }
   }
-
 
   if(!is.null(teryt)){
     if(nchar(teryt)>7 | grepl("\\D", teryt)){
@@ -315,7 +272,6 @@ agr_check_arg_types <- function(year=NULL, admin_branch=NULL, service_type=NULL,
   }
 
   if(msg!=""){
-    # browser()
     warning(msg)
   }
 
@@ -335,12 +291,6 @@ check_env_lang <- function(){
     "1. Before using nfzRapi functions run following command: Sys.setlocale('LC_CTYPE', 'Polish_Poland.1250')\n",
     "2. After using nfzRapi, run following command to restore original setting: Sys.setlocale('LC_CTYPE', '", char_set,"')")
     message(msg)
-    # message(paste0("Your character set does not support Polish non ASCII characters.",
-    # "Your LC_CTYPE environment variable has value '", char_set,"', but to be sure that nfzRapi functions work correctly it has to be changed to 'Polish_Poland.1250'.\n
-    # 1. Before using nfzRapi functions run following command: Sys.setlocale('LC_CTYPE', 'Polish_Poland.1250')\n
-    # 2. After using nfzRapi, run following command to restore original setting: Sys.setlocale('LC_CTYPE', '", char_set,"')"))
-    # opt <- options(show.error.messages = FALSE)
-    # on.exit(options(opt))
     stop("The character set defined by LC_CTYPE environemt variable does not support Polish non ASCII characters.")
   }
 }
@@ -384,7 +334,6 @@ convert_pl_signs <- function(char){
     `%C5%BC`="\u17C",
     `%20`=" "
   )
-  # browser()
   char2 <- c()
   for(character in char){
     for(letter in unicode_dict){
@@ -393,7 +342,6 @@ convert_pl_signs <- function(char){
     }
     char2 <- c(char2, character)
   }
-  # browser()
   return(char2)
 }
 

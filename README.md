@@ -4,6 +4,8 @@
 # nfzRapi
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/strebuh/nfzRapi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/strebuh/nfzRapi/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 nfzRapi is a set of functions to get data from
@@ -31,6 +33,7 @@ library(nfzRapi)
 # get available years
 agr_get_years()
 #>  [1] 2008 2009 2010 2011 2012 2013 2014 2015 2016 2017 2018 2019 2020 2021 2022
+#> [16] 2023
 
 ## get agreements of providers in Łosice, Mazovian voivodship in 2020
 df = agr_get_agreements(year=2020, admin_branch='07', town="Łosice", service_type='03')

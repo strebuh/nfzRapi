@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # nfzRapi
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/strebuh/nfzRapi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/strebuh/nfzRapi/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 nfzRapi is a set of functions to get data from `https://api.nfz.gov.pl/app-umw-api/` - an API of Narodowy Fundusz Zdrowia. As for September 2022 availabe functions let the user to get general data about agreements and providers.
